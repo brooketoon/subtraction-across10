@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two-Digit Subtraction With Regrouping</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#157A4A;
+  --green-soft:#E4F6EC;
+  --blue:#1F5BB5;
+  --blue-soft:#E6EFFB;
+  --purple:#7248B4;
+  --purple-soft:#F0E9FA;
+  --red:#D63A3A;
+  --red-soft:#FCEAEA;
+  --amber:#8A5A12;
+  --amber-soft:#FDF3E1;
+  --ink:#1E2430;
+  --muted:#5C6577;
+  --paper:#FFFFFF;
+  --bg:#F7F5FB;
+  --cell:66px;
+  --accent:var(--blue);
+  --accent-soft:var(--blue-soft);
+}
+*{box-sizing:border-box;}
+[hidden]{display:none !important;}
+.sr-only{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+button:focus-visible,[role=button]:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:3px;}
+h1[tabindex="-1"]:focus{outline:none;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Andika','Comic Sans MS',Verdana,sans-serif;
+  font-size:18px;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+button{font-family:'Fredoka',sans-serif;font-size:18px;cursor:pointer;}
+/* touch: no double-tap zoom delay on controls, no grey flash on tap */
+button,input,summary,[role=button],.digit{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+input{font-family:'Andika',Verdana,sans-serif;}
+
+/* ---------- header ---------- */
+.topbar{
+  background:var(--paper);
+  border-bottom:3px solid var(--accent);
+  padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;
+  transition:border-color .25s;
+}
+.brandwrap{display:flex;align-items:center;gap:10px;}
+.home{height:44px;border-radius:12px;border:3px solid var(--accent);background:#fff;color:var(--accent);font-size:17px;line-height:1;padding:0 14px;display:flex;align-items:center;gap:6px;transition:border-color .25s,color .25s;}
+.home:hover{background:var(--accent-soft);}
+.home .hi{font-size:20px;}
+.brand{font-family:'Fredoka',sans-serif;font-size:22px;color:var(--accent);transition:color .25s;}
+.dots{display:flex;gap:9px;align-items:center;}
+.dot{width:16px;height:16px;flex:none;border-radius:50%;background:#DDD8E6;}
+.dot.done{background:var(--green);}
+.dot.now{background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+.count{font-size:16px;color:var(--muted);}
+body.on-landing .dots, body.on-landing .count, body.on-landing .home{display:none;}
+body.on-paper .dots, body.on-paper .count{display:none;}
+/* the start page has its own big title, so the bar would only repeat it */
+body.on-landing .topbar{display:none;}
+
+/* ---------- card ---------- */
+#practice{max-width:760px;margin:0 auto;padding:26px 16px 70px;}
+.card{
+  background:var(--paper);
+  border-radius:22px;
+  padding:26px 20px 24px;
+  box-shadow:0 6px 0 var(--accent-soft);
+  border:2px solid var(--accent-soft);
+  transition:box-shadow .25s,border-color .25s;
+}
+.kind{
+  font-family:'Fredoka',sans-serif;
+  font-size:20px;
+  color:var(--accent);
+  text-align:center;
+  margin:0 0 4px;
+}
+.hint{font-size:16px;color:var(--muted);text-align:center;margin:0 0 20px;}
+
+/* ---------- problem grid ---------- */
+.grid{display:grid;gap:9px;justify-content:center;align-items:center;}
+.grid.sub{grid-template-columns:repeat(3,var(--cell));}
+
+.digit{
+  height:var(--cell);
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;font-weight:700;
+  position:relative;
+  border-radius:12px;
+}
+.digit.tap{cursor:pointer;}
+.digit.tap:hover{background:var(--purple-soft);}
+.digit.tap:focus-visible{outline:3px solid var(--purple);outline-offset:2px;}
+.digit.struck::after{
+  content:"";position:absolute;left:14%;right:14%;top:48%;
+  height:5px;border-radius:3px;background:var(--red);
+  transform:rotate(-40deg);
+}
+.op{font-size:40px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;height:var(--cell);}
+
+.box{
+  width:var(--cell);height:var(--cell);
+  font-size:38px;font-weight:700;text-align:center;
+  border:3px dashed #8A82A0;border-radius:14px;
+  background:#FCFBFE;color:var(--ink);
+  padding:0;
+}
+.box:focus{outline:none;border-color:var(--accent);border-style:solid;background:#fff;box-shadow:0 0 0 4px var(--accent-soft);}
+.box.wrong{border-color:var(--red);border-style:solid;background:var(--red-soft);animation:shake .4s;}
+.box.focuscol{box-shadow:0 0 0 5px #F6C9C9;}
+.box.shown{border-color:var(--blue);border-style:solid;background:var(--blue-soft);color:var(--blue);}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+.work{
+  height:48px;width:var(--cell);
+  font-size:26px;font-weight:700;text-align:center;
+  border:3px dashed var(--green);border-radius:12px;
+  background:var(--green-soft);color:var(--green);
+  padding:0;
+  justify-self:center;
+}
+.work:focus{outline:none;border-style:solid;box-shadow:0 0 0 4px #D3EFE0;}
+
+.work.wrong{border-color:var(--red);border-style:solid;background:var(--red-soft);color:#A02C2C;animation:shake .4s;}
+
+.wrap{position:relative;width:var(--cell);justify-self:center;}
+.wrap .work{width:100%;justify-self:auto;}
+.rule{grid-column:1/-1;height:6px;background:var(--ink);border-radius:3px;margin:4px 0;}
+
+.helpbtn{
+  width:42px;height:42px;border-radius:50%;
+  border:none;background:var(--purple);color:#fff;
+  font-size:20px;line-height:1;
+  justify-self:center;
+  box-shadow:0 3px 0 #55338C;
+}
+.helpbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #55338C;}
+
+/* ---------- feedback + coach ---------- */
+.feedback{
+  min-height:30px;text-align:center;margin:20px 0 4px;
+  font-size:20px;font-family:'Fredoka',sans-serif;
+}
+.feedback.good{color:var(--green);}
+.feedback.fix{color:var(--red);}
+
+.coach{
+  display:flex;gap:12px;align-items:flex-start;
+  margin:12px auto 4px;max-width:560px;
+  background:var(--amber-soft);border:3px solid #D9A84E;border-radius:18px;
+  padding:14px 14px 12px;
+  animation:pop .25s ease-out;
+}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.coach .face{flex:0 0 auto;}
+.coach .body{flex:1;}
+.coach .lvl{font-family:'Fredoka',sans-serif;font-size:15px;color:var(--amber);margin:0 0 2px;}
+.coach p{margin:0 0 6px;font-size:18px;}
+.coach ol{margin:4px 0 6px;padding-left:24px;}
+.coach li{margin:3px 0;font-size:18px;}
+.coach .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.sbtn{border:3px solid var(--purple);background:#fff;color:var(--purple);border-radius:12px;padding:5px 12px;font-size:16px;min-height:44px;}
+.sbtn.fill{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+.actions{display:flex;gap:12px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+.btn{
+  border:none;border-radius:14px;padding:14px 30px;color:#fff;font-size:19px;
+}
+.btn.check{background:var(--accent);box-shadow:0 4px 0 rgba(0,0,0,.22);}
+.btn.next{background:var(--green);box-shadow:0 4px 0 #0F5A37;}
+.btn:active{transform:translateY(3px);box-shadow:none;}
+.btn.ghost{background:#fff;color:var(--purple);border:3px solid var(--purple);box-shadow:none;}
+.btn.sm{padding:9px 16px;font-size:16px;min-height:44px;}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(30,36,48,.45);z-index:20;}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(370px,88vw);
+  background:var(--paper);z-index:21;
+  padding:22px 20px;overflow-y:auto;
+  border-left:5px solid var(--purple);
+  box-shadow:-8px 0 26px rgba(30,36,48,.18);
+  animation:slide .22s ease-out;
+}
+@keyframes slide{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.drawer h2{font-family:'Fredoka',sans-serif;color:var(--purple);font-size:22px;margin:0 0 2px;}
+.drawer .sub{font-size:16px;color:var(--muted);margin:0 0 18px;}
+.step{
+  border:3px solid var(--purple-soft);border-radius:16px;
+  padding:14px;margin-bottom:14px;
+}
+.step p{margin:0 0 8px;font-size:17px;}
+.bignum{font-size:34px;font-weight:700;color:var(--purple);text-align:center;margin:6px 0;}
+.eq{display:flex;align-items:center;justify-content:center;gap:10px;font-size:32px;font-weight:700;}
+.mini{
+  width:74px;height:56px;font-size:30px;font-weight:700;text-align:center;
+  border:3px dashed var(--purple);border-radius:12px;background:#fff;color:var(--purple);padding:0;
+}
+.mini:focus{outline:none;border-style:solid;box-shadow:0 0 0 4px var(--purple-soft);}
+.mini.ok{border-style:solid;border-color:var(--green);color:var(--green);background:var(--green-soft);}
+.step.last{border-color:var(--green-soft);background:var(--green-soft);}
+.close{margin-top:6px;width:100%;padding:13px;border-radius:14px;border:3px solid var(--purple);background:#fff;color:var(--purple);}
+
+/* ---------- landing ---------- */
+.landing{max-width:760px;margin:0 auto;padding:22px 16px 60px;}
+.hero{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:4px 0 6px;}
+.bubble{
+  position:relative;background:#fff;border:3px solid var(--purple-soft);border-radius:20px;
+  padding:14px 16px;max-width:330px;margin-bottom:60px;
+  box-shadow:0 4px 0 var(--purple-soft);
+}
+.bubble::after{
+  content:"";position:absolute;left:-16px;bottom:22px;
+  border-width:10px 16px 10px 0;border-style:solid;border-color:transparent var(--purple-soft) transparent transparent;
+}
+.bubble p{margin:0 0 4px;font-size:19px;}
+.speak{border:none;background:var(--purple-soft);color:var(--purple);border-radius:10px;padding:4px 12px;font-size:15px;margin-top:4px;min-height:44px;}
+.big{font-family:'Fredoka',sans-serif;font-size:38px;color:var(--purple);text-align:center;margin:0 0 14px;line-height:1.15;}
+.how{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:0 0 18px;}
+/* (legacy) */
+.howcard{
+  background:#fff;border-radius:18px;padding:14px 14px 12px;border:3px solid var(--purple-soft);
+  display:flex;gap:12px;align-items:center;
+}
+.howcard .ic{
+  flex:0 0 46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka',sans-serif;font-size:24px;color:#fff;background:var(--purple);
+}
+.howcard.add .ic{background:var(--blue);}
+.howcard.sub .ic{background:var(--purple);}
+.howcard.ones .ic{background:var(--green);}
+.howcard.clue .ic{background:var(--amber);}
+.howcard b{display:block;font-family:'Fredoka',sans-serif;font-weight:600;font-size:19px;line-height:1.2;}
+.howcard span{font-size:16px;color:var(--muted);}
+.namebox{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0 0 14px;}
+.namebox label{font-family:'Fredoka',sans-serif;font-size:19px;color:var(--ink);}
+.namebox input{
+  width:min(320px,90%);height:56px;font-size:24px;text-align:center;
+  border:3px dashed var(--purple);border-radius:14px;background:#fff;color:var(--ink);
+}
+.namebox input:focus{outline:none;border-style:solid;box-shadow:0 0 0 4px var(--purple-soft);}
+/* who's practicing */
+.who{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+.kid{min-height:52px;min-width:64px;padding:0 18px;border-radius:14px;border:3px solid var(--purple-soft);background:#fff;color:var(--purple);font-size:20px;}
+.kid[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff;}
+.addkid{min-height:48px;padding:0 16px;border-radius:14px;border:3px dashed var(--purple);background:#fff;color:var(--purple);font-size:17px;}
+.addkid[aria-expanded="true"]{border-style:solid;background:var(--purple-soft);}
+.fivedots{text-align:center;color:var(--muted);font-size:17px;margin:0 0 10px;}
+.fivedots .row{display:flex;gap:8px;justify-content:center;margin-top:4px;}
+.fivedots .row i{width:20px;height:20px;border-radius:50%;background:var(--green-soft);border:3px solid var(--green);display:block;}
+.start{display:block;margin:0 auto 22px;background:var(--green);box-shadow:0 6px 0 #0F5A37;font-size:26px;padding:16px 46px;border-radius:18px;}
+.grownups{background:#fff;border-radius:16px;border:2px solid #E3DEEC;padding:10px 16px;font-size:16px;}
+.grownups summary{cursor:pointer;font-family:'Fredoka',sans-serif;color:var(--purple);font-size:17px;min-height:44px;display:flex;align-items:center;gap:6px;}
+.grownups p{margin:8px 0;color:var(--muted);}
+.grownups .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0;}
+
+/* ---------- how-it-works demo ---------- */
+.demo{background:#fff;border-radius:22px;border:3px solid var(--purple-soft);padding:16px 14px 14px;margin:0 0 20px;box-shadow:0 5px 0 var(--purple-soft);}
+.demo h2{font-family:'Fredoka',sans-serif;color:var(--purple);font-size:22px;text-align:center;margin:0 0 10px;}
+.demotabs{display:flex;gap:8px;justify-content:center;margin:0 0 6px;flex-wrap:wrap;}
+.demotab{border:3px solid var(--purple-soft);background:#fff;color:var(--purple);border-radius:12px;padding:7px 14px;font-size:16px;min-height:44px;}
+.demotab.on{background:var(--purple);color:#fff;border-color:var(--purple);}
+.demotab[data-d=add].on{background:var(--blue);border-color:var(--blue);}
+.demotab[data-d=help].on{background:var(--amber);border-color:var(--amber);}
+.stage{position:relative;padding:10px 0 6px;--dc:48px;min-height:370px;}
+.dgrid{display:grid;gap:7px;justify-content:center;align-items:center;}
+.dgrid.sub{grid-template-columns:repeat(3,var(--dc));}
+.dd{height:var(--dc);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;position:relative;border-radius:10px;transition:background .3s;}
+.dd.hl{background:#FFF0B8;}
+.dd.struck::after{content:"";position:absolute;left:14%;right:14%;top:48%;height:4px;border-radius:3px;background:var(--red);transform:rotate(-40deg);}
+.dop{font-size:30px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;height:var(--dc);}
+.dbox{width:var(--dc);height:var(--dc);border:3px dashed #8A82A0;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;background:#FCFBFE;transition:background .3s,border-color .3s;}
+.dbox.hl{background:#FFF0B8;}
+.dbox.filled{border-style:solid;border-color:#A59DB5;}
+.dbox.wrong,.dwork.wrong{border-style:solid;border-color:var(--red);background:var(--red-soft);}
+.dbox.good{border-style:solid;border-color:var(--green);background:var(--green-soft);color:var(--green);}
+.dwork{width:var(--dc);height:36px;border:3px dashed var(--green);border-radius:10px;background:var(--green-soft);color:var(--green);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;justify-self:center;}
+.dwork.filled{border-style:solid;}
+.dhelp{width:30px;height:30px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;justify-self:center;font-size:16px;box-shadow:0 3px 0 #55338C;}
+.drule{grid-column:1/-1;height:5px;background:var(--ink);border-radius:3px;}
+.dcheck{display:table;margin:12px auto 0;color:#fff;border-radius:12px;padding:9px 20px;font-family:'Fredoka',sans-serif;font-size:16px;box-shadow:0 3px 0 rgba(0,0,0,.2);}
+.dfb{min-height:24px;text-align:center;font-family:'Fredoka',sans-serif;font-size:17px;margin-top:6px;color:var(--green);}
+.dcoach{max-width:380px;margin:4px auto 0;background:var(--amber-soft);border:3px solid #F1D9A8;border-radius:14px;padding:8px 12px;font-size:15px;line-height:1.35;}
+.dcoach b{color:var(--amber);font-family:'Fredoka',sans-serif;font-weight:500;}
+.finger{position:absolute;left:0;top:0;font-size:36px;line-height:1;pointer-events:none;z-index:3;transition:left .55s ease,top .55s ease,opacity .3s;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));}
+.finger.tap{animation:tap .45s .6s;}
+@keyframes tap{50%{transform:scale(.78) translateY(-4px);}}
+.caption{min-height:70px;background:var(--purple-soft);border-radius:14px;padding:10px 14px;font-size:19px;text-align:center;margin:8px 0 10px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.caption .num{flex:0 0 auto;width:32px;height:32px;border-radius:50%;background:var(--purple);color:#fff;font-family:'Fredoka',sans-serif;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.dctrl{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;}
+.dctrl .sbtn{font-size:17px;padding:8px 16px;min-height:44px;min-width:48px;}
+.dctrl .sbtn.go{background:var(--purple);color:#fff;}
+.dctrl .sbtn:disabled{opacity:.4;cursor:default;}
+.dprog{display:flex;gap:6px;justify-content:center;margin:8px 0 0;}
+.dprog i{width:10px;height:10px;border-radius:50%;background:#DDD8E6;display:block;}
+.dprog i.on{background:var(--purple);}
+
+/* break-apart panel (demo) */
+.dcoach.plain{background:none;border:none;padding:0;max-width:none;}
+.bp{max-width:660px;margin:10px auto 0;border:3px solid var(--purple);border-radius:18px;background:#fff;padding:10px 12px 12px;box-shadow:0 4px 0 var(--purple-soft);}
+.bp.hint{border-color:#E7B95A;box-shadow:0 4px 0 #F6E3BB;}
+.bph{display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Fredoka',sans-serif;color:var(--purple);font-size:18px;margin:0 0 8px;}
+.bp.hint .bph{color:var(--amber);}
+.bpq{width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 0 #55338C;}
+.bp.hint .bpq{background:var(--amber);box-shadow:0 2px 0 #8A5A12;}
+.bps{display:flex;align-items:stretch;justify-content:center;gap:4px;}
+.bstep{flex:1 1 0;min-width:0;background:var(--purple-soft);border-radius:14px;padding:8px 6px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;animation:pop .35s both;}
+.bp.hint .bstep{background:var(--amber-soft);}
+.bstep.s2{animation-delay:.45s;} .bstep.s3{animation-delay:.9s;}
+.bhead{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--ink);line-height:1.2;font-family:'Fredoka',sans-serif;font-weight:500;}
+.bnum{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--purple);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.bp.hint .bnum{background:var(--amber);}
+.beq{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;font-size:24px;font-weight:700;white-space:nowrap;}
+.nc{display:inline-flex;min-width:34px;height:34px;border-radius:10px;align-items:center;justify-content:center;padding:0 5px;font-size:21px;}
+.nc.ten{background:var(--blue);color:#fff;}
+.nc.rest{background:var(--green);color:#fff;}
+.nc.mid{background:var(--purple);color:#fff;}
+.nc.ans{background:var(--green-soft);color:var(--green);border:3px solid var(--green);}
+.nc.q{background:#fff;color:var(--amber);border:3px dashed var(--amber);}
+.barrow{align-self:center;color:#B9A6DA;font-size:24px;font-weight:700;padding:0 1px;animation:pop .35s both;}
+.barrow.a1{animation-delay:.25s;} .barrow.a2{animation-delay:.7s;}
+@media (max-width:560px){
+  .bps{flex-direction:column;gap:2px;}
+  .bstep{flex-direction:row;justify-content:space-between;padding:8px 12px;}
+  .bstep .beq{justify-content:flex-end;}
+  .barrow{transform:rotate(90deg);line-height:1;animation:none;}
+}
+
+/* ---------- done screen ---------- */
+.donescreen{text-align:center;padding:14px 4px;}
+.donescreen h1{font-family:'Fredoka',sans-serif;font-size:30px;color:var(--green);margin:6px 0 6px;}
+.donescreen p{font-size:18px;color:var(--muted);margin:0 0 16px;}
+/* Pip's congratulations */
+.cheer{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 10px;}
+.cheerpip{flex:0 0 auto;}
+.cheerpip img{display:block;width:140px;height:auto;transform-origin:50% 100%;animation:pipHop .75s ease-in-out .15s 3;}
+@keyframes pipHop{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-20px) rotate(-6deg)}65%{transform:translateY(0) rotate(5deg)}}
+.cheer .bubble{margin:0;max-width:340px;text-align:left;animation:pop .3s ease-out .2s both;}
+.donescreen .cheer .bubble p{color:var(--ink);font-size:19px;margin:0 0 4px;}
+#heroMascot img{display:block;}
+@media (max-width:560px){
+  .cheerpip img{width:100px;}
+  .cheer .bubble{max-width:220px;padding:10px 12px;}
+  .donescreen .cheer .bubble p{font-size:17px;}
+}
+.stars{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:0 0 18px;}
+.starchip{border-radius:14px;padding:8px 12px;background:var(--green-soft);font-size:16px;min-width:110px;}
+.starchip .s{font-size:28px;display:block;}
+.starchip.fixed{background:var(--blue-soft);}
+.starchip.together{background:var(--purple-soft);}
+.grownrow{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:2px dashed #E3DEEC;font-size:16px;color:var(--muted);}
+
+/* ---------- paper views (report + sheet) ---------- */
+.paperwrap{max-width:820px;margin:0 auto;padding:18px 14px 60px;}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:0 0 16px;}
+.paper{background:#fff;border-radius:10px;box-shadow:0 2px 14px rgba(30,36,48,.10);padding:34px 38px;font-family:Verdana,'Andika',sans-serif;font-size:14px;line-height:1.45;color:#222;}
+.paper h1{font-family:'Fredoka',sans-serif;font-size:26px;color:var(--purple);margin:0;}
+.paper h2{font-family:'Fredoka',sans-serif;font-size:18px;color:var(--purple);margin:22px 0 8px;border-bottom:2px solid var(--purple-soft);padding-bottom:3px;}
+.paper .meta{color:var(--muted);font-size:13px;margin:2px 0 0;}
+.paper table{border-collapse:collapse;width:100%;font-size:13px;}
+.paper th,.paper td{text-align:left;padding:6px 8px;border-bottom:1px solid #EAE6F0;vertical-align:top;}
+.paper th{background:#F7F5FB;font-weight:700;}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 4px;}
+.kpi{border:2px solid var(--purple-soft);border-radius:10px;padding:8px 10px;}
+.kpi b{display:block;font-size:22px;font-family:'Fredoka',sans-serif;color:var(--ink);}
+.kpi span{font-size:12px;color:var(--muted);}
+.summary{background:#F7F5FB;border-radius:10px;padding:12px 14px;margin:12px 0 0;font-size:14.5px;}
+.pillst{display:inline-block;border-radius:20px;padding:1px 9px;font-size:12px;font-weight:700;white-space:nowrap;}
+.pillst.well{background:var(--green-soft);color:#14764A;}
+.pillst.developing{background:var(--blue-soft);color:var(--blue);}
+.pillst.needs{background:var(--red-soft);color:#A02C2C;}
+.pillst.early,.pillst.none{background:#EEE;color:#555;}
+.evid{font-size:11.5px;color:var(--muted);}
+@media (max-width:560px){ .paper .barcol{display:none;} .paper table{font-size:12px;} .paper th,.paper td{padding:5px 4px;} }
+.evid.lim{color:#8A5A12;}
+.bar{height:9px;border-radius:5px;background:#EEE9F5;overflow:hidden;min-width:80px;}
+.bar i{display:block;height:100%;background:var(--purple);border-radius:5px;}
+.notice{border-left:4px solid var(--amber);background:var(--amber-soft);padding:9px 12px;border-radius:6px;margin:8px 0;}
+.notice b{display:block;}
+.notice .ex{color:var(--muted);font-size:12.5px;}
+.nextlist li{margin:5px 0;}
+.small{font-size:12px;color:var(--muted);}
+.rp-empty{text-align:center;padding:40px 10px;color:var(--muted);font-size:16px;}
+.danger{border-color:var(--red) !important;color:var(--red) !important;}
+
+/* practice sheet */
+.sheet{font-family:'Andika',Verdana,sans-serif;}
+.sh-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:3px solid var(--purple);padding-bottom:6px;}
+.sh-head .nm{font-size:15px;}
+.sh-head .nm span{display:inline-block;min-width:150px;border-bottom:1.5px solid #333;padding:0 4px;font-weight:700;}
+.focusline{font-size:13px;margin:6px 0 0;color:#333;}
+.remember{border:2px dashed var(--green);border-radius:10px;padding:6px 10px;margin:8px 0;font-size:14px;background:#F6FCF8;}
+.remember b{color:var(--green);}
+.example{display:flex;gap:18px;align-items:flex-start;border:2px solid var(--purple-soft);border-radius:12px;padding:10px 14px;margin:8px 0 12px;}
+.example .exlabel{font-family:'Fredoka',sans-serif;color:var(--purple);font-size:15px;margin:0 0 4px;}
+.example ol{margin:0;padding-left:20px;font-size:13.5px;}
+.example li{margin:2px 0;}
+.wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 14px;}
+.wp{border:2px solid #E3DEEC;border-radius:12px;padding:8px 8px 14px;}
+.wph{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:0 4px 2px;}
+.wph b{font-size:17px;color:var(--ink);}
+.wpg{display:grid;grid-template-columns:repeat(3,46px);justify-content:center;column-gap:6px;row-gap:5px;}
+.wpg .d{height:48px;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:700;position:relative;}
+.wpg .o{height:48px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;}
+.wpg .cb{width:32px;height:32px;border:2px dashed var(--green);border-radius:7px;justify-self:center;align-self:end;}
+.wpg .sp{height:48px;border-bottom:1.5px dotted #D8D2E3;}
+.wpg .ln{grid-column:1/-1;height:4px;background:#222;border-radius:2px;}
+.wpg .ab{height:54px;border:2px solid #9A93A8;border-radius:9px;}
+.wpg .ab.key{display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:var(--blue);border-color:var(--blue);}
+.ex .wpg{grid-template-columns:repeat(3,36px);}
+.ex .wpg .d{height:40px;font-size:32px;}
+.ex .wpg .o{height:40px;font-size:28px;}
+.ex .wpg .ab{height:40px;}
+.ex .wpg .ann, .kx .wpg .ann{height:30px;display:flex;align-items:flex-end;justify-content:center;gap:2px;font-size:15px;font-weight:700;}
+.ann .old{color:#999;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;}
+.ann .new{color:var(--red);}
+.ann .cy{color:var(--green);}
+.wpg .d.x::after{content:"";position:absolute;left:12%;right:12%;top:48%;height:3px;background:var(--red);transform:rotate(-40deg);border-radius:2px;}
+.tag{font-size:10.5px;border-radius:8px;padding:0 6px;}
+.tag.warm{background:var(--green-soft);color:#14764A;}
+.tag.focus{background:var(--purple-soft);color:var(--purple);}
+.keytable td{font-size:13px;}
+.contd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid var(--purple);padding-bottom:4px;margin:0 0 14px;}
+.contd h2{border:none;margin:0;padding:0;}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.kcard{display:flex;gap:12px;align-items:flex-start;border:1.5px solid #E3DEEC;border-radius:10px;padding:8px 10px;break-inside:avoid;}
+.kcard h3{margin:0 0 3px;font-size:15px;font-family:'Fredoka',sans-serif;font-weight:600;color:var(--purple);}
+.kcard ol{margin:0;padding-left:18px;font-size:12px;line-height:1.35;}
+.kcard li{margin:1px 0;}
+.kcard .sk{font-size:11px;color:var(--muted);margin:3px 0 0;}
+.kx .wpg{grid-template-columns:repeat(3,28px);column-gap:3px;row-gap:2px;}
+.kx .wpg .d{height:30px;font-size:24px;}
+.kx .wpg .o{height:30px;font-size:22px;}
+.kx .wpg .ab{height:32px;border-width:1.5px;border-radius:6px;}
+.kx .wpg .ab.key{font-size:20px;}
+.kx .wpg .ann{height:22px;font-size:13px;}
+.kx .wpg .d.x::after{height:2.5px;}
+.pagebreak{break-before:page;page-break-before:always;margin-top:30px;}
+
+@media (max-width:560px){
+  :root{--cell:54px;}
+  .digit{font-size:36px;}
+  .box{font-size:30px;}
+  .work{font-size:22px;height:46px;}
+  #practice{padding:18px 10px 60px;}
+  #heroMascot img{width:108px;height:auto;}
+  .hero{align-items:center;}
+  .card{padding:20px 12px;}
+  .how{grid-template-columns:1fr;}
+  .big{font-size:32px;}
+  .bubble{margin-bottom:40px;}
+  .paper{padding:18px 14px;}
+  .kpis{grid-template-columns:repeat(2,1fr);}
+  .wgrid{grid-template-columns:repeat(2,1fr);}
+  .kgrid{grid-template-columns:1fr;}
+  .wpg{grid-template-columns:repeat(3,36px);}
+}
+
+/* ---------- wide screens: Pip + start in a side column, demo beside it ---------- */
+@media (min-width:980px){
+  .landing{
+    max-width:1240px;padding:10px 24px 20px;
+    display:grid;grid-template-columns:clamp(300px,28vw,360px) minmax(0,1fr);column-gap:24px;align-items:start;
+    grid-template-areas:"title demo" "hero demo" "name demo" "dots demo" "start demo" "grown demo";
+    grid-template-rows:auto auto auto auto auto 1fr;
+  }
+  .landing .big{grid-area:title;text-align:left;font-size:34px;margin:4px 0 8px;}
+  .landing .hero{grid-area:hero;justify-content:flex-start;align-items:flex-start;gap:6px;margin:0 0 12px;}
+  #heroMascot img{width:120px;height:auto;}
+  .landing .bubble{margin:6px 0 0;max-width:240px;flex:1 1 auto;padding:12px 14px;}
+  .landing .bubble::after{bottom:auto;top:30px;}
+  .landing .bubble p{font-size:17px;}
+  .landing .demo{grid-area:demo;margin:0;}
+  .landing .namebox{grid-area:name;align-items:stretch;margin:0 0 10px;}
+  .landing .namebox label{text-align:left;}
+  .landing .namebox input{width:100%;}
+  .landing .who{justify-content:flex-start;}
+  .landing .addkid{align-self:flex-start;}
+  .landing .fivedots{grid-area:dots;text-align:left;margin:0 0 12px;}
+  .landing .fivedots .row{justify-content:flex-start;}
+  .landing .start{grid-area:start;width:100%;margin:0 0 16px;}
+  .landing .grownups{grid-area:grown;}
+  .stage{min-height:0;--dc:46px;}
+  .demo{padding:12px 14px 10px;}
+  .demo h2{font-size:20px;margin:0 0 6px;}
+  .caption{min-height:54px;margin:6px 0 4px;padding:8px 12px;font-size:18px;}
+  .dprog{margin-top:6px;}
+}
+/* very wide: hint panel sits beside the problem instead of under it */
+@media (min-width:980px){
+  .stage{display:flex;justify-content:center;align-items:center;gap:20px;min-height:318px;}
+  .sleft{flex:0 0 auto;}
+  .sright{flex:0 1 320px;min-width:280px;}
+  .sright .dcoach{margin:0;max-width:none;}
+  .sright .bp{margin:0;}
+  .sright .bps{flex-direction:column;gap:2px;}
+  .sright .bstep{flex-direction:row;justify-content:space-between;padding:8px 12px;}
+  .sright .bstep .beq{justify-content:flex-end;}
+  .sright .barrow{transform:rotate(90deg);line-height:1;animation:none;}
+}
+@media (max-width:380px){
+  :root{--cell:46px;}
+  .grid{gap:6px;}
+  .digit{font-size:30px;}
+  .op{font-size:30px;}
+  .box{font-size:26px;}
+  .work{font-size:20px;height:44px;}
+  .stage{--dc:40px;}
+  .dd{font-size:26px;} .dbox{font-size:23px;}
+  .start{padding:14px 30px;font-size:22px;}
+  .topbar{padding:10px 12px;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important;}
+}
+@media print{
+  @page{size:letter;margin:0.45in;}
+  body{background:#fff;}
+  .noprint,.topbar,#confetti,.scrim,.drawer{display:none !important;}
+  .paperwrap{max-width:none;padding:0;margin:0;}
+  .paper{box-shadow:none;border-radius:0;padding:0;}
+  .wgrid{grid-template-columns:repeat(3,1fr);}
+  .kgrid{grid-template-columns:1fr 1fr;}
+  .wpg{grid-template-columns:repeat(3,46px);}
+  .pagebreak{margin-top:0;}
+  .kpis{grid-template-columns:repeat(4,1fr);}
+  .wp,.notice,.example,.kcard,tr{break-inside:avoid;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+
+/* ---------- confetti ---------- */
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:30;}
+.piece{position:absolute;top:-24px;width:12px;height:18px;border-radius:3px;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(104vh) rotate(640deg);opacity:.9;}}
+
+/* ---------- copyright footer ---------- */
+.sitefoot{text-align:center;font-size:13px;line-height:1.5;color:var(--muted);padding:14px 16px 22px;}
+.sitefoot b{font-family:'Fredoka',sans-serif;font-weight:500;color:var(--purple);}
+@media print{ .sitefoot{font-size:9pt;padding:10px 0 0;color:#666;} }
+/* two-digit tool additions */
+h1.big .subt{display:block;font-size:.62em;color:var(--muted);}
+.blk .blkrow{display:flex;justify-content:center;align-items:flex-end;gap:22px;margin:4px 0 6px;}
+.blk .blkcol{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.blk .rods{display:flex;gap:5px;align-items:flex-end;min-height:84px;}
+.blk .rod{width:13px;height:82px;border-radius:3px;background:var(--blue);
+  background-image:repeating-linear-gradient(to bottom,transparent 0 7.2px,rgba(255,255,255,.55) 7.2px 8.2px);}
+.blk .rod.gone{background:transparent;border:2px dashed var(--blue);opacity:.55;}
+.blk .rod.out{opacity:.22;}
+.blk .cubes{display:grid;grid-template-columns:repeat(5,13px);gap:3px;align-content:end;min-height:84px;}
+.blk .cube{width:13px;height:13px;border-radius:2px;background:var(--green);}
+.blk .cube.new{background:var(--purple);}
+.blk .cube.out{opacity:.22;}
+.blk .blab{font-size:15px;color:var(--ink);font-family:'Fredoka',sans-serif;}
+.blk .blab b{font-size:18px;}
+.blk .bnote{text-align:center;font-size:15px;color:var(--ink);margin-top:2px;}
+@media screen and (max-width:400px){ .paper .narrowhide{display:none;} }
+</style>
+</head>
+<body class="on-landing">
+
+<header class="topbar noprint">
+  <div class="brandwrap">
+    <button class="home" id="homeBtn" type="button" aria-label="Home"><span class="hi">&#127968;</span>Home</button>
+    <div class="brand" id="brand">Two-Digit Subtraction</div>
+  </div>
+  <div class="dots" id="dots"></div>
+  <div class="count" id="count">Problem 1 of 5</div>
+</header>
+
+<!-- ============ LANDING ============ -->
+<main id="app">
+<section class="landing view" id="landing">
+  <h1 class="big">Two-Digit Subtraction <span class="subt">With Regrouping</span></h1>
+  <div class="hero">
+    <div id="heroMascot"></div>
+    <div class="bubble">
+      <p id="hello">Hi! I'm Pip the owl.</p>
+      <p>Today we'll subtract two-digit numbers by <b>trading a ten for 10 ones</b>! Watch how it works, then press <b>Let's go</b>.</p>
+      <button class="speak" type="button" id="sayHello">&#128266; Read to me</button>
+    </div>
+  </div>
+
+  <div class="demo" id="demo">
+    <h2>Watch how it works</h2>
+    <div class="demotabs" role="group" aria-label="Choose a demo">
+      <button class="demotab on" type="button" data-d="trade" aria-pressed="true">&#10134; Trading a ten</button>
+      <button class="demotab" type="button" data-d="help" aria-pressed="false">&#128161; If I get stuck</button>
+    </div>
+    <div class="caption" aria-live="polite"><span class="num" id="dNum" aria-hidden="true">1</span><span id="dCap"></span></div>
+    <div class="stage" id="dStage" aria-hidden="true"></div>
+    <div class="dctrl">
+      <button class="sbtn" type="button" id="dBack">&#9664; Back</button>
+      <button class="sbtn go" type="button" id="dNext">Next &#9654;</button>
+      <button class="sbtn" type="button" id="dPlay">&#9654; Play all</button>
+      <button class="sbtn" type="button" id="dSay">&#128266;</button>
+    </div>
+    <div class="dprog" id="dProg" aria-hidden="true"></div>
+  </div>
+
+  <div class="namebox">
+    <label for="nameIn" id="whoLabel">What's your name?</label>
+    <div class="who" id="whoList" role="group" aria-labelledby="whoLabel" hidden></div>
+    <button class="addkid" id="addKid" type="button" aria-expanded="false" hidden>+ Someone new</button>
+    <input id="nameIn" maxlength="20" autocomplete="off" placeholder="Type your name">
+  </div>
+  <div class="fivedots">5 problems today
+    <div class="row"><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+  <button class="btn start" id="startBtn" type="button">Let's go! &#9654;</button>
+
+  <details class="grownups">
+    <summary>For grown-ups</summary>
+    <p>Each set has 5 two-digit subtraction problems, and every one needs a ten traded for 10 ones (like 42 − 17). The mix of problem types leans toward the steps your child found harder in recent sessions. Writing the trade in the green boxes is optional: a right answer worked out mentally counts, but if a green box holds a wrong number, Pip asks your child to check it. Each child who plays gets their own history, report and practice sheet. Results stay saved in this browser on this device only, separately from the three-digit Regrouping Practice.</p>
+    <p>Showing results for: <b id="gpWho">—</b></p>
+    <div class="row">
+      <button class="btn ghost sm" type="button" id="lpReport">Parent report</button>
+      <button class="btn ghost sm" type="button" id="lpSheet">Practice sheet</button>
+    </div>
+    <p class="small" id="histNote"></p>
+    <div class="row"><button class="btn ghost sm" type="button" id="removeKid" hidden>Remove this child</button></div>
+  </details>
+</section>
+
+<!-- ============ PRACTICE ============ -->
+<div class="view" id="practice" hidden>
+  <div class="card" id="card">
+    <h1 class="kind" id="kind" tabindex="-1">Subtraction</h1>
+    <p class="hint" id="hint"></p>
+    <div class="grid" id="grid"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <div class="coach" id="coach" hidden aria-live="polite"></div>
+    <div class="actions">
+      <button class="btn check" id="checkBtn" type="button">Check my work</button>
+      <button class="btn next" id="nextBtn" type="button" hidden>Next problem</button>
+    </div>
+  </div>
+
+  <div class="card donescreen" id="doneCard" hidden>
+    <h1 id="doneTitle" tabindex="-1">All five done!</h1>
+    <div class="cheer">
+      <div class="cheerpip" id="donePip"></div>
+      <div class="bubble">
+        <p id="pipCheer"></p>
+        <button class="speak" type="button" id="sayCheer">&#128266; Read to me</button>
+      </div>
+    </div>
+    <div class="stars" id="doneStars"></div>
+    <div class="actions"><button class="btn next" id="againBtn" type="button">Play again</button></div>
+    <div class="grownrow">
+      <span>Grown-ups:</span>
+      <button class="btn ghost sm" type="button" id="dReport">See the report</button>
+      <button class="btn ghost sm" type="button" id="dSheet">Make a practice sheet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PARENT REPORT ============ -->
+<section class="view paperwrap" id="reportView" hidden>
+  <div class="toolbar noprint">
+    <button class="btn ghost sm" type="button" data-back>&larr; Back</button>
+    <button class="btn next sm" type="button" id="printReport">Print / Save as PDF</button>
+    <button class="btn ghost sm" type="button" id="copyReport">Copy as text</button>
+    <button class="btn ghost sm" type="button" id="rpToSheet">Make a practice sheet</button>
+  </div>
+  <div class="paper" id="reportBody"></div>
+  <div class="toolbar noprint" style="margin-top:16px">
+    <button class="btn ghost sm" type="button" id="clearHist">Clear saved history</button>
+  </div>
+</section>
+
+<!-- ============ PRACTICE SHEET ============ -->
+<section class="view paperwrap" id="sheetView" hidden>
+  <div class="toolbar noprint">
+    <button class="btn ghost sm" type="button" data-back>&larr; Back</button>
+    <button class="btn next sm" type="button" id="printSheet">Print / Save as PDF</button>
+    <button class="btn ghost sm" type="button" id="newSheet">New problems, same focus</button>
+  </div>
+  <div class="paper sheet" id="sheetBody"></div>
+</section>
+</main>
+
+<footer class="sitefoot">
+  &copy; 2026 <b>Curiosity Engine Interactive</b>. All rights reserved.
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-label="Break it apart helper"></div>
+<div id="confetti"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     Config + storage
+     ========================================================= */
+  var N = 5;
+  function lsGet(k,d){ try{ var v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+
+  /* =========================================================
+     Child profiles. Everything that reads or writes practice history goes through Store,
+     so a cloud store (household accounts) can replace this browser-local one later
+     without touching the rest of the app. Profile ids are random strings, not names,
+     so they can map to server-side ids.
+     This tool has its own namespace ("twodigitsub.*"), separate from the three-digit
+     Regrouping Practice ("regroup.*"), so the two never read or overwrite each other.
+     ========================================================= */
+  var Store = (function(){
+    var KEY='twodigitsub.profiles.v1', SESS='twodigitsub.sessions.v1.';
+    function blank(){ return {version:1, tool:'two-digit-subtraction', current:null, order:[], profiles:{}}; }
+    function load(){
+      var d=lsGet(KEY,null);
+      if(!d || typeof d!=='object' || !d.profiles || !Array.isArray(d.order)) d=blank();
+      return d;
+    }
+    function save(d){ lsSet(KEY,d); }
+    function newId(){ return 'p_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+    function norm(n){ return String(n||'').trim().toLowerCase(); }
+    function findByName(d,name){
+      for(var i=0;i<d.order.length;i++){ var p=d.profiles[d.order[i]]; if(p && norm(p.name)===norm(name)) return p; }
+      return null;
+    }
+    function make(d,name){
+      var id; do{ id=newId(); }while(d.profiles[id]);
+      var p={id:id, name:String(name||'').trim(), created:new Date().toISOString(), updated:new Date().toISOString()};
+      d.profiles[p.id]=p; d.order.push(p.id); return p;
+    }
+    return {
+      list:function(){ var d=load(); return d.order.map(function(id){ return d.profiles[id]; }).filter(Boolean); },
+      current:function(){ var d=load(); return d.profiles[d.current] || null; },
+      select:function(id){ var d=load(); if(d.profiles[id]){ d.current=id; save(d); } },
+      // Returns the existing profile when the name is already taken (case-insensitive).
+      findOrCreate:function(name){ var d=load(); var p=findByName(d,name) || make(d,name); d.current=p.id; save(d); return p; },
+      remove:function(id){
+        var d=load(); if(!d.profiles[id]) return;
+        delete d.profiles[id]; d.order=d.order.filter(function(x){ return x!==id; });
+        if(d.current===id) d.current=d.order[0]||null;
+        save(d); lsDel(SESS+id);
+      },
+      sessions:function(id){ var a=lsGet(SESS+id,[]); return Array.isArray(a)?a:[]; },
+      saveSession:function(id,sess){
+        var all=this.sessions(id), idx=-1;
+        for(var i=0;i<all.length;i++){ if(all[i] && all[i].id===sess.id){ idx=i; break; } }
+        if(idx>=0) all[idx]=sess; else all.push(sess);
+        if(all.length>40) all=all.slice(-40);
+        lsSet(SESS+id,all);
+        var d=load(); if(d.profiles[id]){ d.profiles[id].updated=new Date().toISOString(); save(d); }
+      },
+      clearSessions:function(id){ lsDel(SESS+id); }
+    };
+  })();
+  function displayName(p){ return p ? (p.name || 'Guest') : ''; }
+
+  var CHEERS = [
+    "Nailed it!",
+    "That's exactly right!",
+    "Beautiful trading!",
+    "Every digit is perfect!",
+    "You've got this down!",
+    "Sharp work!",
+    "Right on the money!"
+  ];
+  var FIXED_CHEERS = [
+    "You fixed it! That's real thinking.",
+    "You found it and fixed it!",
+    "Great job sticking with it!"
+  ];
+
+  var PLACES=['ones','tens'];
+
+  /* Four steps of the two-digit trade. Each problem gives at most ONE opportunity per step,
+     and a step is only counted when the first attempt shows evidence about it
+     (e.g. the ones subtraction can't be judged if the trade itself was missed). */
+  var SKILLS = {
+    trade_ones:{label:'Trading 1 ten for 10 ones'},
+    lower_tens:{label:'Lowering the tens by 1 after the trade'},
+    ones_fact:{label:'Subtracting the ones after trading (like 12 − 7)'},
+    tens_fact:{label:'Subtracting the tens'}
+  };
+  var SKILL_ORDER=['trade_ones','lower_tens','ones_fact','tens_fact'];
+
+  var SKILL_NEXT = {
+    trade_ones:{
+      weak:'Trading a ten: before subtracting the ones, ask "Is the top big enough?" If not, trade. With base-ten blocks (or dimes and pennies), swap one ten-stick for 10 ones so they can see 42 is still 42: 3 tens and 12 ones.',
+      strong:'Trading a ten for 10 ones is going well.'},
+    lower_tens:{
+      weak:'Lowering the tens: the ten that moved to the ones has left the tens. Have them cross out the tens digit and write one less above it before doing anything else.',
+      strong:'Lowering the tens after a trade is going well.'},
+    ones_fact:{
+      weak:'Ones facts after trading: practice teen-minus facts with make-a-ten: 13 − 8 = (10 − 8) + 3. The purple ? button in the app walks through this step by step.',
+      strong:'Subtracting the ones after trading is going well.'},
+    tens_fact:{
+      weak:'Tens facts: remind them to use the new tens number (the one in the green box), then count up from the bottom number to the top.',
+      strong:'Subtracting the tens is going well.'}
+  };
+
+  // Possible error patterns. Each is a likely explanation for what was entered, not a confirmed misconception.
+  var ERR = {
+    smaller_from_larger:{title:'Possibly subtracted the smaller digit from the larger',
+      what:'In the ones, where the top digit was smaller, the answer matches subtracting top from bottom (2 − 7 done as 7 − 2), and no trade was written.',
+      why:'This is a very common pattern at this age. It can mean "trade when the top is too small" isn’t automatic yet.',
+      next:'Before subtracting the ones, have them say "Is the top big enough?" out loud. If the answer is no, they trade first.',
+      kid:'Top big enough? If not, TRADE!'},
+    no_reduce:{title:'Possibly traded but didn’t lower the tens',
+      what:'The ones look traded, but the tens answer matches using the original tens digit, and no new tens number was written.',
+      why:'If so, trading is understood and the bookkeeping step slipped.',
+      next:'Ask for the cross-out every time: cross out the tens digit and write one less above it before subtracting the tens.',
+      kid:'Cross out the tens. Write one less.'},
+    unused_work:{title:'Possibly wrote the new number but didn’t use it',
+      what:'The new number in the green box was right, but the answer matches subtracting with the old digit.',
+      why:'If so, the trade itself is understood. The next step is using the new number.',
+      next:'After writing a new number, have them point to it and say "This is my new top number" before subtracting.',
+      kid:'Use your new top number.'},
+    tens_value:{title:'Possibly wrote the wrong new tens number',
+      what:'The number written over the tens wasn’t one less than the original tens digit, and the tens answer follows from it.',
+      why:'Common slips are writing the same digit again or taking away more than 1 ten.',
+      next:'Act it out: one ten-stick leaves the tens, so the tens go down by exactly 1.',
+      kid:'Trade 1 ten: the tens go down by 1.'},
+    ones_value:{title:'Possibly wrote the wrong new ones number',
+      what:'The number written over the ones wasn’t the original ones plus 10, and the ones answer follows from it.',
+      why:'Often 1 is added instead of 10, or the 1 is written on the wrong side (2 becoming 21).',
+      next:'Say it with blocks: 1 ten = 10 ones, so 2 ones become 10 + 2 = 12 ones.',
+      kid:'1 ten = 10 ones. Add 10 to the ones.'},
+    work_mismatch:{title:'Right answer, but the written trade had a mistake',
+      what:'The answer digits were correct, but a number in a green box wasn’t the right value after trading (for example, 4 tens left as 4 instead of 3).',
+      why:'The answer may have been worked out another way, or the notation is still being learned. Because of the mistake, the tool doesn’t count that step as shown correctly.',
+      next:'Ask them to explain their green boxes out loud: "I traded 1 ten, so 4 tens became 3 tens, and 2 ones became 12 ones."',
+      kid:'Green boxes: tens go down 1, ones go up 10.'},
+    fact_slip:{title:'Possible fact slip',
+      what:'The trading looks right, but the subtracting fact in one column came out wrong.',
+      why:'If so, the strategy is in place and fact fluency is still building.',
+      next:'Five minutes of make-a-ten facts: 13 − 6 = (10 − 6) + 3. A dice or card game works well.',
+      kid:'Make a ten to check your facts.'},
+    blank:{title:'Left a box empty',
+      what:'An answer box was left blank when it needed a number.',
+      why:'Often happens when rushing, or when unsure whether a column needs a digit.',
+      next:'Remind them that the ones always get a number, and the tens do too unless nothing is left there.',
+      kid:'Every column with something left gets a number.'}
+  };
+
+  /* =========================================================
+     State + elements
+     ========================================================= */
+  var state = {
+    i:0, problems:[], p:null,
+    answerBoxes:[], workBoxes:[], helpBtns:[], topDigits:[],
+    session:null, rec:null, t0:0, returnTo:'landing', name:''
+  };
+
+  function $(id){ return document.getElementById(id); }
+  var grid=$('grid'), kindEl=$('kind'), hintEl=$('hint'), fb=$('feedback'), coach=$('coach');
+  var checkBtn=$('checkBtn'), nextBtn=$('nextBtn'), dotsEl=$('dots'), countEl=$('count');
+  var drawer=$('drawer'), scrim=$('scrim'), card=$('card'), doneCard=$('doneCard');
+
+  function rnd(lo,hi){ return Math.floor(Math.random()*(hi-lo+1))+lo; }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function digits(n,len){ return String(n).padStart(len,'0').split('').map(Number); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function sum(arr,f){ var t=0; arr.forEach(function(x){ t+=f(x); }); return t; }
+  function avg(arr){ return arr.length? arr.reduce(function(a,b){return a+b;},0)/arr.length : 0; }
+  function sign(){ return '−'; }
+  function probText(r){ return r.a+' '+sign(r.type)+' '+r.b; }
+  function uniq(a){ return a.filter(function(x,i){ return a.indexOf(x)===i; }); }
+
+  /* =========================================================
+     Place-value engine for two-digit subtraction with one trade
+     (shared by grading, hints, report, sheet and demo)
+     ========================================================= */
+  function D(n){ return [n%10, Math.floor(n/10)%10]; }
+
+  // cols[0] = ones, cols[1] = tens. Every problem in this tool trades 1 ten for 10 ones.
+  function sub2(a,b){
+    var A=D(a), B=D(b), needs=A[0]<B[0];
+    var ones={place:0, orig:A[0], bot:B[0], recv:needs?1:0, gave:0};
+    var tens={place:1, orig:A[1], bot:B[1], recv:0, gave:needs?1:0};
+    ones.work = ones.orig + (needs?10:0);
+    tens.work = tens.orig - (needs?1:0);
+    ones.before = ones.orig;
+    tens.before = tens.work;
+    ones.digit = ones.work-ones.bot;
+    tens.digit = tens.work-tens.bot;
+    ones.chain = needs ? [ones.work] : [];
+    tens.chain = needs ? [tens.work] : [];
+    return [ones, tens];
+  }
+
+  function skillsFor(){ return SKILL_ORDER.slice(); }
+
+  /* =========================================================
+     Problem generator. Every problem: two two-digit numbers, top > bottom,
+     top ones < bottom ones (so exactly one ten is traded), positive answer.
+     Kinds give variety and let practice target one step of the trade.
+     ========================================================= */
+  var KIND_LABEL = {
+    standard:'Trading a ten (mixed)',
+    zero_ones:'Zero in the ones (like 30 − 16)',
+    one_digit:'One-digit answers (like 41 − 35)',
+    ones_hard:'Tricky ones facts (like 13 − 8)',
+    tens_big:'Bigger tens (like 84 − 39)'
+  };
+  // Which kinds put the most weight on each step
+  var KINDS_FOR_SKILL = {
+    trade_ones:['standard','zero_ones'],
+    lower_tens:['one_digit','tens_big'],
+    ones_fact:['ones_hard','zero_ones'],
+    tens_fact:['tens_big','standard']
+  };
+
+  function validTwoDigit(a,b){
+    var A=D(a), B=D(b);
+    return a>=10 && a<=99 && b>=10 && b<=99 && a>b && A[0]<B[0] && (a-b)>0;
+  }
+
+  function makeProb(kind){
+    for(var g=0; g<5000; g++){
+      var T, O, t, o;
+      if(kind==='zero_ones'){ T=rnd(2,9); O=0; t=rnd(1,T-1); o=rnd(1,9); }
+      else if(kind==='one_digit'){ T=rnd(2,9); O=rnd(0,8); t=T-1; o=rnd(O+1,9); }
+      else if(kind==='ones_hard'){ T=rnd(2,9); O=rnd(0,4); t=rnd(1,T-1); o=rnd(O+5,9); }
+      else if(kind==='tens_big'){ T=rnd(6,9); O=rnd(0,8); t=rnd(1,T-3); o=rnd(O+1,9); }
+      else { T=rnd(3,9); O=rnd(1,8); t=rnd(1,T-2); o=rnd(O+1,9); }
+      var a=T*10+O, b=t*10+o;
+      if(!validTwoDigit(a,b)) continue;
+      return {type:'sub', a:a, b:b, result:a-b, kind:kind||'standard'};
+    }
+    return {type:'sub', a:42, b:17, result:25, kind:'standard'};
+  }
+
+  /* =========================================================
+     History + evidence
+     ========================================================= */
+  // Practice history for the selected child only.
+  function allSessions(){
+    var p=Store.current(); if(!p) return [];
+    return Store.sessions(p.id).filter(function(x){ return x && x.problems && x.problems.length; });
+  }
+  function saveSession(){
+    if(!state.session || !state.session.problems.length || !state.session.profileId) return;
+    Store.saveSession(state.session.profileId, state.session);
+  }
+
+  // opp = problems where the first attempt showed evidence about the step (one per problem at most).
+  function skillStats(sessions){
+    var st={};
+    SKILL_ORDER.forEach(function(k){ st[k]={opp:0,ok:0,sessions:0}; });
+    sessions.forEach(function(s){
+      var seen={};
+      s.problems.forEach(function(r){
+        var so=r.skillOk||{};
+        Object.keys(so).forEach(function(k){
+          if(!st[k] || typeof so[k]!=='boolean') return;      // null = no evidence on this problem
+          st[k].opp++; if(so[k]) st[k].ok++; seen[k]=1;
+        });
+      });
+      Object.keys(seen).forEach(function(k){ st[k].sessions++; });
+    });
+    SKILL_ORDER.forEach(function(k){ st[k].m = st[k].opp ? st[k].ok/st[k].opp : null; });
+    return st;
+  }
+  /* Step status. "Going well" needs enough evidence: at least MIN_OPP problems spread over MIN_SESS
+     sessions, at 80%+ first-try accuracy. With less evidence the status says so instead of guessing. */
+  var MIN_OPP=6, MIN_SESS=2, EARLY_OPP=3;
+  function statusOf(s){
+    if(!s || !s.opp) return 'none';
+    if(s.opp<EARLY_OPP) return 'early';
+    if(s.m>=0.8 && s.opp>=MIN_OPP && s.sessions>=MIN_SESS) return 'well';
+    if(s.m>=0.5) return 'developing';
+    return 'needs';
+  }
+  function limitedEvidence(s){ return !!s && s.opp>0 && (s.opp<MIN_OPP || s.sessions<MIN_SESS); }
+  var STATUS_LABEL={well:'Going well', developing:'Developing', needs:'Needs practice', early:'Too early to tell', none:'Not seen yet'};
+  function evidenceText(s){
+    return s.opp+' problem'+(s.opp===1?'':'s')+' · '+s.sessions+' session'+(s.sessions===1?'':'s')+(limitedEvidence(s)?' · limited evidence':'');
+  }
+
+  /* Adaptive plan for one 5-problem set: the kinds lean toward the steps this child
+     found harder recently, but every set mixes at least 3 kinds and never repeats a problem. */
+  var ALL_KINDS=['standard','zero_ones','one_digit','ones_hard','tens_big'];
+  function planSet(){
+    var st=skillStats(allSessions().slice(-5));
+    function m(k){ return st[k].m==null ? 0.7 : st[k].m; }
+    var w={};
+    ALL_KINDS.forEach(function(k){ w[k]=0.35; });
+    SKILL_ORDER.forEach(function(s){ KINDS_FOR_SKILL[s].forEach(function(k){ w[k]+= (1-m(s)); }); });
+    function draw(exclude){
+      var ks=ALL_KINDS.filter(function(k){ return exclude.indexOf(k)<0; });
+      var tot=ks.reduce(function(a,k){ return a+w[k]; },0), r=Math.random()*tot;
+      for(var i=0;i<ks.length;i++){ r-=w[ks[i]]; if(r<=0) return ks[i]; }
+      return ks[ks.length-1];
+    }
+    var kinds=[], count={};
+    while(kinds.length<N){
+      var full=ALL_KINDS.filter(function(k){ return (count[k]||0)>=2; });  // at most 2 of any kind
+      var k=draw(full); kinds.push(k); count[k]=(count[k]||0)+1;
+    }
+    // at least 3 different kinds
+    var distinct=uniq(kinds);
+    while(distinct.length<3){
+      var missing=ALL_KINDS.filter(function(k){ return distinct.indexOf(k)<0; });
+      var dupIdx=kinds.lastIndexOf(kinds.filter(function(k){ return count[k]>1; })[0]);
+      var nk=pick(missing); count[kinds[dupIdx]]--; kinds[dupIdx]=nk; count[nk]=1;
+      distinct=uniq(kinds);
+    }
+    // a "standard" warm-up first when there is one, otherwise keep the drawn order
+    var si=kinds.indexOf('standard'); if(si>0){ kinds.splice(si,1); kinds.unshift('standard'); }
+    var seen={}, answers={}, list=[];
+    kinds.forEach(function(k){
+      var p;
+      for(var t=0;t<60;t++){
+        p=makeProb(k);
+        if(!seen[p.a+'-'+p.b] && !answers[p.result] && !seen['top'+p.a]) break;
+      }
+      seen[p.a+'-'+p.b]=1; seen['top'+p.a]=1; answers[p.result]=1;
+      list.push(p);
+    });
+    return {problems:list, kinds:kinds};
+  }
+
+  /* =========================================================
+     Speech + mascot
+     ========================================================= */
+  function speak(text){
+    try{
+      if(!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      var u=new SpeechSynthesisUtterance(String(text).replace(/−/g,' minus ').replace(/\+/g,' plus ').replace(/=/g,' equals ').replace(/\?/g,'?'));
+      u.rate=0.9; u.pitch=1.05;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  var canSpeak = ('speechSynthesis' in window);
+
+  // Pip the owl (purple body, teal glasses and wings). Embedded so the file stays self-contained.
+  var PIP_FULL='data:image/webp;base64,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';
+  var PIP_HEAD='data:image/webp;base64,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';
+  function mascot(h){
+    return '<img src="'+PIP_FULL+'" width="'+Math.round(h*360/408)+'" height="'+h+'" alt="">';
+  }
+  function miniFace(){
+    return '<img src="'+PIP_HEAD+'" width="42" height="42" alt="">';
+  }
+
+  /* =========================================================
+     Views
+     ========================================================= */
+  var firstShow=true;
+  function show(view){
+    ['landing','practice','reportView','sheetView'].forEach(function(v){ $(v).hidden = (v!==view); });
+    document.body.classList.toggle('on-landing', view==='landing');
+    document.body.classList.toggle('on-paper', view==='reportView' || view==='sheetView');
+    if(view==='landing' && window.Demo) window.Demo.refresh();
+    if(view==='landing') theme('sub');
+    window.scrollTo(0,0);
+    if(!firstShow){
+      var h=$(view).querySelector('h1');
+      if(h){ h.setAttribute('tabindex','-1'); try{ h.focus({preventScroll:true}); }catch(e){ h.focus(); } }
+    }
+    firstShow=false;
+  }
+
+  function theme(t){
+    var root=document.documentElement;
+    // one theme for this tool: purple (subtraction)
+    root.style.setProperty('--accent','var(--purple)'); root.style.setProperty('--accent-soft','var(--purple-soft)');
+  }
+
+  function el(tag, cls){ var e=document.createElement(tag); if(cls) e.className=cls; return e; }
+  function place(e,col,row){ e.style.gridColumn=col; e.style.gridRow=row; grid.appendChild(e); return e; }
+
+  function digitsOnly(inp){
+    inp.setAttribute('inputmode','numeric');
+    inp.setAttribute('autocomplete','off');
+    inp.addEventListener('input', function(){
+      this.value = this.value.replace(/[^0-9]/g,'').slice(0, Number(this.maxLength));
+    });
+  }
+
+  /* ---------- landing ---------- */
+  var nameIn=$('nameIn'), whoList=$('whoList'), addKid=$('addKid');
+  $('heroMascot').innerHTML=mascot(165);
+  var adding=false;
+  function typedName(){ return nameIn.hidden ? '' : nameIn.value.trim(); }
+  function greet(){
+    var cur=Store.current();
+    var n = typedName() || (adding ? '' : (cur ? cur.name : ''));
+    $('hello').textContent = n ? 'Hi, '+n+'! I\'m Pip the owl.' : 'Hi! I\'m Pip the owl.';
+  }
+  function renderWho(){
+    var list=Store.list(), cur=Store.current();
+    var none=!list.length;
+    $('whoLabel').textContent = none || adding ? 'What\'s your name?' : 'Who\'s practicing?';
+    whoList.hidden=none; addKid.hidden=none;
+    nameIn.hidden = !(none || adding);
+    addKid.setAttribute('aria-expanded', adding?'true':'false');
+    addKid.textContent = adding ? 'Cancel' : '+ Someone new';
+    whoList.innerHTML='';
+    list.forEach(function(p){
+      var b=el('button','kid'); b.type='button';
+      b.textContent=displayName(p);
+      b.setAttribute('aria-pressed', (!adding && cur && cur.id===p.id)?'true':'false');
+      b.addEventListener('click', function(){
+        adding=false; nameIn.value=''; Store.select(p.id);
+        renderWho(); greet(); refreshHistNote();
+      });
+      whoList.appendChild(b);
+    });
+    var who=displayName(cur);
+    $('gpWho').textContent = cur ? who : 'no one yet';
+    $('removeKid').hidden = !cur;
+    resetRemove();
+  }
+  addKid.addEventListener('click', function(){
+    adding=!adding; nameIn.value='';
+    renderWho(); greet();
+    if(adding) nameIn.focus();
+  });
+  nameIn.addEventListener('input', greet);
+  var removeArmed=false;
+  function resetRemove(){
+    removeArmed=false; var b=$('removeKid'), cur=Store.current();
+    b.textContent = cur ? 'Remove '+displayName(cur)+' and their history' : 'Remove this child';
+    b.classList.remove('danger');
+  }
+  $('removeKid').addEventListener('click', function(){
+    var cur=Store.current(); if(!cur) return;
+    if(!removeArmed){ removeArmed=true; this.textContent='Tap again to remove '+displayName(cur); this.classList.add('danger'); return; }
+    Store.remove(cur.id); adding=false; renderWho(); greet(); refreshHistNote();
+  });
+  renderWho();
+  greet();
+  if(!canSpeak) $('sayHello').hidden=true;
+  $('sayHello').addEventListener('click', function(){
+    speak($('hello').textContent+' Today we\'ll subtract two-digit numbers by trading a ten for 10 ones! Watch how it works by pressing Next, then press Let\'s go.');
+  });
+
+  function refreshHistNote(){
+    var s=allSessions(), cur=Store.current();
+    var who = cur ? ' for '+displayName(cur) : '';
+    $('histNote').textContent = s.length ? (s.length+' practice session'+(s.length===1?'':'s')+' saved'+who+' on this device. Last: '+new Date(s[s.length-1].date).toLocaleDateString()+'.') : 'No sessions saved'+who+' yet.';
+  }
+  refreshHistNote();
+
+  $('startBtn').addEventListener('click', startSession);
+  nameIn.addEventListener('keydown', function(e){ if(e.key==='Enter') startSession(); });
+
+  function startSession(){
+    // Pick the child: a typed name finds or creates a profile; otherwise use the selected one.
+    var typed=typedName(), prof=Store.current();
+    if(typed || !prof) prof=Store.findOrCreate(typed);
+    adding=false; nameIn.value=''; renderWho(); greet();
+    state.name = prof.name;
+    var plan=planSet();                 // uses only this child's history
+    state.problems=plan.problems;
+    state.i=0;
+    state.session={ id:Date.now(), date:new Date().toISOString(), profileId:prof.id, name:state.name, tool:'two-digit-subtraction', kinds:plan.kinds, problems:[] };
+    card.hidden=false; doneCard.hidden=true;
+    show('practice');
+    render();
+  }
+
+  $('brand').style.cursor='pointer';
+  $('brand').addEventListener('click', function(){ $('homeBtn').click(); });
+  $('homeBtn').addEventListener('click', function(){
+    closeHelp();
+    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+    refreshHistNote(); renderWho(); greet();
+    show('landing');
+  });
+
+  /* ---------- practice ---------- */
+  function renderDots(){
+    dotsEl.innerHTML='';
+    for(var k=0;k<N;k++){
+      var d=el('div','dot');
+      if(k<state.i) d.classList.add('done');
+      else if(k===state.i) d.classList.add('now');
+      dotsEl.appendChild(d);
+    }
+    countEl.textContent = 'Problem '+(state.i+1)+' of '+N;
+  }
+
+  function newRecord(p){
+    return {
+      type:p.type, a:p.a, b:p.b, result:p.result,
+      kind:p.kind||'', skills:skillsFor(p), skillOk:{},
+      tries:0, firstTry:null, answerFirstTry:null, revealed:false, hintMax:0, helpOpens:0,
+      firstErrors:[], errorCodes:[], firstAnswer:'',
+      workFirst:'none',          // first check: 'correct' | 'partial' | 'none' | 'wrong'
+      workFinal:'none',          // when solved: 'correct' | 'partial' | 'none'
+      workPrompt:false,          // got feedback about the written trade while the answer was right
+      usedWork:false, ms:0
+    };
+  }
+
+  function render(){
+    var p = state.problems[state.i];
+    state.p = p;
+    state.rec = newRecord(p);
+    state.t0 = Date.now();
+    state.answerBoxes=[]; state.workBoxes=[]; state.helpBtns=[]; state.topDigits=[];
+    theme('sub');
+    grid.innerHTML='';
+    fb.textContent=''; fb.className='feedback';
+    coach.hidden=true; coach.innerHTML='';
+    nextBtn.hidden=true; checkBtn.hidden=false;
+    renderDots();
+    if(state.i>0){ try{ kindEl.focus({preventScroll:true}); }catch(e){} }
+    kindEl.textContent='Subtraction';
+    hintEl.textContent='Not enough ones? Trade a ten. You can write the new numbers in the green boxes.';
+    grid.className='grid sub';
+    buildSub(p);
+  }
+
+  /* Grid: column 1 = minus sign, 2 = tens, 3 = ones.
+     Rows: 1 help button, 2 green regroup boxes, 3 top number, 4 bottom number, 5 rule, 6 answer.
+     idx 0 = tens column, idx 1 = ones column (left to right). Place value = 1 - idx. */
+  function buildSub(p){
+    var A=digits(p.a,2), B=digits(p.b,2);
+    for(var i=0;i<2;i++){
+      (function(idx){
+        var pl=PLACES[1-idx];
+        var hb=el('button','helpbtn');
+        hb.type='button'; hb.textContent='?'; hb.hidden=true;
+        hb.setAttribute('aria-label','Break-apart help for the '+pl);
+        hb.addEventListener('click', function(){ openHelp(idx); });
+        place(hb, 2+idx, 1);
+
+        var wrap=el('div','wrap');
+        var w=el('input','work');
+        w.type='text'; w.maxLength=2;
+        w.setAttribute('aria-label', idx===0 ? 'New tens number after trading (optional)' : 'New ones number after trading (optional)');
+        digitsOnly(w);
+        wrap.appendChild(w);
+        place(wrap, 2+idx, 2);
+
+        var d=el('div','digit tap');
+        d.textContent=A[idx]; d.tabIndex=0;
+        d.setAttribute('role','button');
+        d.setAttribute('aria-pressed','false');
+        d.setAttribute('aria-label','Top '+pl+' digit '+A[idx]+'. Tap to cross out.');
+        function sync(){ d.setAttribute('aria-pressed', d.classList.contains('struck')?'true':'false'); }
+        function flip(){ d.classList.toggle('struck'); sync(); }
+        d.addEventListener('click', flip);
+        d.addEventListener('keydown', function(e){
+          if(e.key===' '||e.key==='Enter'){ e.preventDefault(); flip(); }
+        });
+        place(d, 2+idx, 3);
+
+        w.addEventListener('input', function(){
+          w.classList.remove('wrong'); w.removeAttribute('aria-invalid');
+          if(w.value.length>0){ d.classList.add('struck'); sync(); }
+          refreshHelp(idx);
+        });
+
+        state.workBoxes.push(w);
+        state.helpBtns.push(hb);
+        state.topDigits.push(d);
+      })(i);
+    }
+    place(el('div','op'),1,4).textContent='−';
+    for(var k=0;k<2;k++) place(el('div','digit'),2+k,4).textContent=B[k];
+    place(el('div','rule'),'1 / -1',5);
+    for(var m=0;m<2;m++){
+      var b=el('input','box');
+      b.type='text'; b.maxLength=1;
+      b.setAttribute('aria-label', m===0 ? 'answer box, tens (leave empty if no tens are left)' : 'answer box, ones');
+      digitsOnly(b);
+      wireAnswer(b);
+      place(b, 2+m, 6);
+      state.answerBoxes.push(b);
+    }
+    for(var z=0;z<2;z++) refreshHelp(z);
+  }
+
+  // The purple ? appears over the ones once a teen number (10 or more) is written there.
+  function refreshHelp(idx){
+    if(!state.p) return;
+    var v=parseInt(state.workBoxes[idx].value,10);
+    state.helpBtns[idx].hidden = !(idx===1 && v>=10 && v<=19);
+  }
+
+  function wireAnswer(b){
+    b.addEventListener('input', function(){
+      b.classList.remove('wrong'); b.classList.remove('focuscol'); b.classList.remove('shown'); b.removeAttribute('aria-invalid');
+      // Only when working right to left: the box to the right is done (or this is the ones) and the box to the left is empty.
+      var i=state.answerBoxes.indexOf(b), L=state.answerBoxes[i-1], R=state.answerBoxes[i+1];
+      if(b.value!=='' && L && L.value==='' && (!R || R.value!=='')) L.focus();
+    });
+    b.addEventListener('keydown', function(e){
+      var i=state.answerBoxes.indexOf(b);
+      if(e.key==='ArrowLeft' && i>0){ e.preventDefault(); state.answerBoxes[i-1].focus(); }
+      if(e.key==='ArrowRight' && i<state.answerBoxes.length-1){ e.preventDefault(); state.answerBoxes[i+1].focus(); }
+      if(e.key==='Enter'){ e.preventDefault(); checkBtn.click(); }
+    });
+  }
+
+  /* ----- help drawer (unchanged method; now counted in diagnostics) ----- */
+  function openHelp(idx){
+    var p=state.p;
+    if(state.rec) state.rec.helpOpens++;
+    var v=parseInt(state.workBoxes[idx].value,10);
+    if(!(v>=10)) return;
+    var take=digits(p.b,2)[idx];
+    var ones=v-10;
+    var answer=10-take;
+
+    drawer.innerHTML='';
+    var h=el('h2'); h.textContent='Break it apart'; drawer.appendChild(h);
+    var s=el('p','sub'); s.textContent='Take it one small step at a time.'; drawer.appendChild(s);
+
+    var s1=el('div','step');
+    var p1=el('p'); p1.textContent='What makes up '+v+'?';
+    var n1=el('div','bignum'); n1.textContent='10 + '+ones;
+    s1.appendChild(p1); s1.appendChild(n1); drawer.appendChild(s1);
+
+    var s2=el('div','step');
+    var p2=el('p'); p2.textContent='Now take '+take+' away from the 10.';
+    var eq=el('div','eq');
+    var t=el('span'); t.textContent='10 − '+take+' =';
+    var mini=el('input','mini'); mini.type='text'; mini.maxLength=2; mini.setAttribute('aria-label','ten minus '+take);
+    digitsOnly(mini);
+    eq.appendChild(t); eq.appendChild(mini);
+    s2.appendChild(p2); s2.appendChild(eq); drawer.appendChild(s2);
+
+    var s3=el('div','step last'); s3.hidden=true;
+    var p3=el('p'); p3.textContent='Add the '+ones+' back on.';
+    var n3=el('div','bignum'); n3.textContent=answer+' + '+ones+' = ?';
+    var p3b=el('p'); p3b.textContent='Work that one out, then write it in the problem.';
+    s3.appendChild(p3); s3.appendChild(n3); s3.appendChild(p3b); drawer.appendChild(s3);
+
+    mini.addEventListener('input', function(){
+      if(mini.value===String(answer)){ mini.classList.add('ok'); s3.hidden=false; }
+      else { mini.classList.remove('ok'); s3.hidden=true; }
+    });
+
+    var c=el('button','close'); c.type='button'; c.textContent='Back to the problem';
+    c.addEventListener('click', closeHelp);
+    drawer.appendChild(c);
+
+    openDrawer();
+    mini.focus();
+  }
+  var helpOpener=null;
+  function openDrawer(){
+    helpOpener=document.activeElement;
+    var t=drawer.querySelector('h2'); if(t) drawer.setAttribute('aria-label', t.textContent);
+    drawer.hidden=false; scrim.hidden=false;
+  }
+  function closeHelp(){
+    var wasOpen=!drawer.hidden;
+    drawer.hidden=true; scrim.hidden=true;
+    if(wasOpen && helpOpener && document.body.contains(helpOpener)) helpOpener.focus();
+  }
+  drawer.addEventListener('keydown', function(e){
+    if(e.key!=='Tab') return;
+    var f=Array.prototype.filter.call(drawer.querySelectorAll('button,input'), function(x){ return !x.hidden && x.offsetParent!==null; });
+    if(!f.length) return;
+    if(e.shiftKey && document.activeElement===f[0]){ e.preventDefault(); f[f.length-1].focus(); }
+    else if(!e.shiftKey && document.activeElement===f[f.length-1]){ e.preventDefault(); f[0].focus(); }
+  });
+  scrim.addEventListener('click', closeHelp);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && !drawer.hidden) closeHelp(); });
+
+  /* =========================================================
+     Diagnosis: grade each answer box and name the most likely pattern.
+     Uses both the answer digits and the regrouping work entered.
+     ========================================================= */
+  // work: {top:{0:'', 1:''}} = what is written in the green box over the ones (0) and tens (1); '' if nothing.
+  // Returns one result per answer box (index 0 = tens box, 1 = ones box):
+  //   code = most likely pattern, alts = other patterns that give the same digit.
+  function analyze(p, gots, work){
+    work = work || {};
+    var res=String(p.result), out=[];
+    var c=sub2(p.a,p.b);
+    for(var i=0;i<2;i++){
+      var placeK=1-i, g=gots[i], col=c[placeK];
+      var leading = placeK >= res.length;               // tens box when the answer is one digit
+      var ok = leading ? (g===''||g==='0') : (g===String(col.digit));
+      var code=null, alts=[];
+      if(!ok){
+        if(g===''){
+          // empty tens box that follows from a wrong written tens number (e.g. 30 − 16 with 1 written over the tens: 1 − 1 = 0)
+          var wt=(work.top||{})[1];
+          if(placeK===1 && wt!=null && wt!=='' && Number(wt)!==col.work && Number(wt)-col.bot===0){ code='tens_value'; alts=['blank']; }
+          else code='blank';
+        }
+        else{
+          var r = classify(col, Number(g), work);
+          code=r.code; alts=r.alts;
+        }
+      }
+      out.push({i:i, place:placeK, got:g, want:leading?'':String(col.digit), ok:ok, code:code, alts:alts});
+    }
+    // Tens "not lowered" next to ones "never traded" is one pattern: no trade at all.
+    var ones=out[1], tens=out[0];
+    if(tens.code==='no_reduce' && ones.code==='smaller_from_larger'){
+      tens.code='smaller_from_larger'; tens.alts=uniq(['no_reduce'].concat(tens.alts)).filter(function(a){ return a!=='smaller_from_larger'; });
+    }
+    return out;
+  }
+
+  function classify(col, gv, work){
+    var w=(work.top||{})[col.place];
+    var wrote = w!=null && w!=='';
+    var wv = wrote ? Number(w) : null;
+    var cands=[];
+    function add(c){ if(cands.indexOf(c)<0) cands.push(c); }
+    var isOnes = col.place===0;
+    var flip = Math.abs(col.orig-col.bot);                    // ones: 2 − 7 done as 7 − 2
+    var unlowered = col.orig-col.bot;                         // tens: used the original tens digit
+    var valueCode = isOnes ? 'ones_value' : 'tens_value';
+
+    if(wrote && wv===col.work){
+      // the trade in this column was written correctly
+      if(isOnes ? gv===flip : gv===unlowered) add('unused_work');
+      add('fact_slip');
+    }else if(wrote){
+      // a number was written, but not the right one
+      if(wv>=col.bot && wv-col.bot===gv) add(valueCode);
+      if(isOnes && gv===flip) add('smaller_from_larger');
+      if(!isOnes && gv===unlowered) add('no_reduce');
+      add(valueCode);
+      add('fact_slip');
+    }else{
+      // nothing written: judge from the answer alone
+      if(isOnes && gv===flip) add('smaller_from_larger');
+      if(!isOnes && gv===unlowered) add('no_reduce');
+      add('fact_slip');
+    }
+    var primary=cands[0];
+    var follows = wrote && wv>=col.bot && wv-col.bot===gv;    // the wrong answer comes straight from the written number
+    return {code:primary, alts:cands.slice(1).filter(function(c){ return c!==primary && !(c==='fact_slip' && follows); })};
+  }
+
+  /* The written trade, checked on its own. Green boxes are optional:
+     empty boxes are never wrong, only numbers that don't match the trade. */
+  function workCheck(p, work){
+    var c=sub2(p.a,p.b), top=(work||{}).top||{};
+    function one(place){
+      var v=top[place]; if(v==null || v==='') return '';
+      return Number(v)===c[place].work ? 'ok' : 'wrong';
+    }
+    var o=one(0), t=one(1), status;
+    if(o===''&&t==='') status='none';
+    else if(o==='wrong'||t==='wrong') status='wrong';
+    else if(o==='ok'&&t==='ok') status='correct';
+    else status='partial';
+    return {ones:o, tens:t, status:status};
+  }
+
+  /* Evidence about each step from the FIRST attempt. true / false, or null when this attempt
+     says nothing about the step (e.g. the ones subtraction can't be judged if the trade was missed). */
+  function skillOkFrom(results, wc){
+    var tens=results[0], ones=results[1];
+    var tradeBad = (!ones.ok && (ones.code==='smaller_from_larger' || ones.code==='ones_value')) || wc.ones==='wrong';
+    var lowerBad = (!tens.ok && ['no_reduce','tens_value','smaller_from_larger'].indexOf(tens.code)>=0) || wc.tens==='wrong';
+    function fact(r, bad){ if(bad) return null; if(r.ok) return true; return r.code==='blank' ? null : false; }
+    return {
+      trade_ones: !tradeBad,
+      lower_tens: !lowerBad,
+      ones_fact: fact(ones, tradeBad),
+      tens_fact: fact(tens, lowerBad)
+    };
+  }
+
+  /* =========================================================
+     Laddered thinking hints
+     ========================================================= */
+  function hintContent(p, o, level){
+    var P=PLACES[o.place];
+    var cs=sub2(p.a,p.b), cc=cs[o.place], ones=cs[0], tens=cs[1];
+    var lines=[], steps=null;
+    var noTensLeft = o.place===1 && cc.digit===0;
+
+    if(o.code==='blank' && level===1){
+      return {lines:[ o.place===0 ? 'The ones box is empty. Every answer needs a ones digit.'
+                                  : 'The tens box is empty. After trading, are there any tens left? If there are, write how many.' ]};
+    }
+    if(level===1){
+      if(o.code==='smaller_from_larger'){
+        lines.push(o.place===0
+          ? 'Look at the ones: '+ones.orig+' take away '+ones.bot+'. Is '+ones.orig+' big enough? If not, trade 1 ten for 10 ones.'
+          : 'Start with the ones. They need a trade first. Once a ten moves to the ones, how many tens are left?');
+      }else if(o.code==='no_reduce'){
+        lines.push('The tens gave 1 ten to the ones. So the top tens isn’t '+tens.orig+' anymore. What is it now?');
+      }else if(o.code==='unused_work'){
+        lines.push('You wrote a new top number for the '+P+'. Nice trading! Did you use it? Try '+cc.work+' − '+cc.bot+'.');
+      }else if(o.code==='tens_value'){
+        lines.push('Look at the green box over the tens. You traded away 1 ten. '+tens.orig+' tens take away 1 ten is how many tens?');
+      }else if(o.code==='ones_value'){
+        lines.push('Look at the green box over the ones. The ones got 10 more. What is '+ones.orig+' + 10?');
+      }else{
+        lines.push(noTensLeft
+          ? 'Check the tens: '+cc.work+' − '+cc.bot+'. If nothing is left, the tens box can stay empty.'
+          : 'Your trading looks right! Check the take-away again: '+cc.work+' − '+cc.bot+'.');
+      }
+    }else if(level===2){
+      steps=[];
+      if(o.place===0){
+        steps.push('The ones started as '+ones.orig+'. You can’t take '+ones.bot+' from '+ones.orig+', so trade 1 ten for 10 ones: '+ones.orig+' + 10 = '+ones.work+'.');
+        if(ones.work>10){
+          var r=ones.work-10;
+          steps.push(ones.work+' = 10 + '+r+'.');
+          steps.push('Take '+ones.bot+' away from the 10: 10 − '+ones.bot+' = ?');
+          steps.push('Add the '+r+' back on. What do you get?');
+        }else{
+          steps.push('10 − '+ones.bot+': start at '+ones.bot+' and count up to 10. How many jumps?');
+        }
+      }else{
+        steps.push('The tens started as '+tens.orig+'. One ten moved to the ones, so now there are '+tens.orig+' − 1 = '+tens.work+' tens.');
+        steps.push(tens.work+' − '+tens.bot+': start at '+tens.bot+' and count up to '+tens.work+'. How many jumps?');
+        if(noTensLeft) steps.push('If the answer is 0, no tens are left. Leave the tens box empty.');
+      }
+    }else{
+      if(o.place===0){
+        lines.push('Ones: '+ones.orig+' → '+ones.work+' after the trade.');
+        if(ones.work>10){
+          var r2=ones.work-10;
+          lines.push(ones.work+' = 10 + '+r2+'. 10 − '+ones.bot+' = '+(10-ones.bot)+'. '+(10-ones.bot)+' + '+r2+' = '+ones.digit+'.');
+        }else{
+          lines.push('10 − '+ones.bot+' = '+ones.digit+'.');
+        }
+        lines.push('Write '+ones.digit+' in the ones.');
+      }else{
+        lines.push('Tens: '+tens.orig+' → '+tens.work+' after the trade. '+tens.work+' − '+tens.bot+' = '+tens.digit+'.');
+        lines.push(noTensLeft ? 'No tens are left, so leave the tens box empty.' : 'Write '+tens.digit+' in the tens.');
+      }
+    }
+    return {lines:lines, steps:steps};
+  }
+
+  function showCoach(p, results, level){
+    var wrong=results.filter(function(o){ return !o.ok; });
+    if(!wrong.length){ coach.hidden=true; return; }
+    // focus on the right-most wrong column (mistakes travel left)
+    var focus=wrong.reduce(function(a,b){ return a.place<=b.place ? a : b; });
+    state.answerBoxes.forEach(function(b){ b.classList.remove('focuscol'); });
+    state.answerBoxes[focus.i].classList.add('focuscol');
+
+    var titles={1:'Clue', 2:'Step by step', 3:'Let’s do it together'};
+    var content;
+    var html='<div class="face">'+miniFace()+'</div><div class="body"><p class="lvl">'+titles[level]+'</p>';
+    var speech=[];
+    if(level===3){
+      wrong.slice().sort(function(a,b){ return a.place-b.place; }).forEach(function(o){
+        var hc=hintContent(p,o,3);
+        html+='<p><b>'+PLACES[o.place].charAt(0).toUpperCase()+PLACES[o.place].slice(1)+':</b> '+hc.lines.map(esc).join(' ')+'</p>';
+        speech.push(PLACES[o.place]+'. '+hc.lines.join(' '));
+      });
+      html+='<p>Read it through, fix your boxes, then press Check.</p>';
+      speech.push('Read it through, fix your boxes, then press Check.');
+    }else{
+      content=hintContent(p,focus,level);
+      content.lines.forEach(function(l){ html+='<p>'+esc(l)+'</p>'; speech.push(l); });
+      if(content.steps){
+        html+='<p>Let’s look at the <b>'+PLACES[focus.place]+'</b>:</p><ol>';
+        content.steps.forEach(function(s){ html+='<li>'+esc(s)+'</li>'; speech.push(s); });
+        html+='</ol>';
+        speech.unshift('Let\'s look at the '+PLACES[focus.place]+'.');
+      }
+      if(wrong.length>1) { html+='<p style="font-size:16px;color:var(--muted)">Fix this one first. It might fix the others too!</p>'; }
+    }
+    html+='<div class="tools">';
+    if(canSpeak) html+='<button class="sbtn" type="button" id="coachSay">&#128266; Read to me</button>';
+    if(level===3) html+='<button class="sbtn fill" type="button" id="coachFill">Show me the digits</button>';
+    html+='</div></div>';
+    coach.innerHTML=html;
+    coach.hidden=false;
+    var sayB=$('coachSay'); if(sayB) sayB.addEventListener('click', function(){ speak(speech.join(' ')); });
+    var fillB=$('coachFill'); if(fillB) fillB.addEventListener('click', function(){
+      fillTogether(wrong);
+      state.rec.revealed=true;
+      fillB.disabled=true; fillB.textContent='Now press Check';
+      checkBtn.focus();
+    });
+  }
+
+  /* =========================================================
+     Checking
+     The answer and the written trade are checked separately:
+       - right answer, no work (or correct work): solved. Mental strategies are fine.
+       - right answer, but a green box holds a wrong number: targeted feedback on the trade;
+         the child fixes the number or clears it, then checks again.
+       - wrong answer: red boxes plus the three-level hints.
+     ========================================================= */
+  checkBtn.addEventListener('click', function(){
+    var boxes=state.answerBoxes, p=state.p, rec=state.rec;
+    var gots=boxes.map(function(b){ return b.value.trim(); });
+    if(gots.every(function(g){ return g===''; })){
+      fb.className='feedback fix'; fb.textContent='Type your answer in the boxes first!';
+      boxes[boxes.length-1].focus();
+      return;
+    }
+    var work=readWork();
+    var results=analyze(p,gots,work);
+    var wc=workCheck(p,work);
+    var ansOk=results.every(function(o){ return o.ok; });
+    results.forEach(function(o){
+      var b=boxes[o.i];
+      if(o.ok){ b.classList.remove('wrong'); b.setAttribute('aria-invalid','false'); } else { b.classList.remove('shown'); b.classList.add('wrong'); b.setAttribute('aria-invalid','true'); }
+    });
+    markWorkBoxes(p, results, wc);
+
+    rec.tries++;
+    if(rec.firstTry===null){
+      rec.answerFirstTry=ansOk;
+      rec.workFirst=wc.status;
+      rec.firstTry = ansOk && wc.status!=='wrong';
+      rec.firstAnswer=gots.map(function(g){ return g===''?' ':g; }).join('').trim();
+      rec.firstErrors=results.filter(function(o){ return !o.ok; }).map(function(o){ return {place:o.place, code:o.code, alts:o.alts||[], got:o.got, want:o.want}; })
+        .sort(function(x,y){ return x.place-y.place; });   // ones first: that's where a missed trade starts
+      if(ansOk && wc.status==='wrong') rec.firstErrors=workErrors(p, work, wc);
+      rec.firstWork=work;
+      rec.skillOk=skillOkFrom(results, wc);
+    }
+    results.forEach(function(o){ if(!o.ok && rec.errorCodes.indexOf(o.code)<0) rec.errorCodes.push(o.code); });
+    if(ansOk && wc.status==='wrong' && rec.errorCodes.indexOf('work_mismatch')<0) rec.errorCodes.push('work_mismatch');
+
+    if(ansOk && wc.status!=='wrong'){
+      rec.ms=Date.now()-state.t0;
+      rec.workFinal=wc.status;
+      rec.usedWork = wc.status!=='none';
+      state.session.problems.push(rec);
+      saveSession();
+      coach.hidden=true;
+      boxes.forEach(function(b){ b.classList.remove('focuscol'); });
+      state.workBoxes.forEach(function(w){ w.classList.remove('wrong'); w.removeAttribute('aria-invalid'); });
+      fb.className='feedback good';
+      var msg = rec.tries===1 ? pick(CHEERS) : pick(FIXED_CHEERS);
+      if(state.name && Math.random()<0.4) msg = msg.replace(/[!.]$/, ', '+state.name+'!');
+      fb.textContent=msg;
+      checkBtn.hidden=true; nextBtn.hidden=false;
+      nextBtn.textContent = (state.i===N-1) ? 'See my stars' : 'Next problem';
+      confetti();
+      nextBtn.focus();
+    }else if(ansOk){
+      rec.workPrompt=true;
+      fb.className='feedback fix';
+      fb.textContent='Your answer is right! Now look at your trade.';
+      showWorkCoach(p, wc);
+      var wb = wc.ones==='wrong' ? state.workBoxes[1] : state.workBoxes[0];
+      try{ wb.focus(); }catch(e){}
+    }else{
+      var level=Math.min(rec.tries - (rec.workPrompt?1:0), 3);
+      if(level<1) level=1;
+      rec.hintMax=Math.max(rec.hintMax,level);
+      fb.className='feedback fix';
+      var wrongPlaces=results.filter(function(o){ return !o.ok; }).map(function(o){ return PLACES[o.place]; });
+      fb.textContent = level===1 ? 'Almost! Look at the red boxes. Here’s a clue:' :
+                       level===2 ? 'Let’s slow down and break it apart.' :
+                                   'No worries, we’ll do it together.';
+      var srx=document.createElement('span'); srx.className='sr-only';
+      srx.textContent=' Check the '+wrongPlaces.join(' and ')+'.';
+      fb.appendChild(srx);
+      showCoach(p,results,level);
+      var focusBox=boxes.filter(function(b){ return b.classList.contains('focuscol'); })[0];
+      if(focusBox) focusBox.focus();
+    }
+  });
+
+  // Record what was wrong in the written trade (used when the answer itself was right).
+  function workErrors(p, work, wc){
+    var c=sub2(p.a,p.b), out=[];
+    [1,0].forEach(function(pl){
+      var k = pl===1 ? wc.tens : wc.ones;
+      if(k==='wrong') out.push({place:pl, code:'work_mismatch', alts:[], got:String(work.top[pl]), want:String(c[pl].work), work:true});
+    });
+    return out;
+  }
+
+  // Feedback when the answer is right but a green box holds a wrong number.
+  function showWorkCoach(p, wc){
+    var c=sub2(p.a,p.b), lines=[];
+    if(wc.tens==='wrong') lines.push('The green box over the tens: you traded away 1 ten, so '+c[1].orig+' tens become how many tens?');
+    if(wc.ones==='wrong') lines.push('The green box over the ones: the ones got 10 more, so '+c[0].orig+' ones become how many ones?');
+    lines.push('Fix the number, or clear the box if you worked it out in your head. Then press Check.');
+    var html='<div class="face">'+miniFace()+'</div><div class="body"><p class="lvl">Check your trade</p>';
+    lines.forEach(function(l){ html+='<p>'+esc(l)+'</p>'; });
+    html+='<div class="tools">'+(canSpeak?'<button class="sbtn" type="button" id="coachSay">&#128266; Read to me</button>':'')+'</div></div>';
+    coach.innerHTML=html; coach.hidden=false;
+    var sayB=$('coachSay'); if(sayB) sayB.addEventListener('click', function(){ speak('Your answer is right! '+lines.join(' ')); });
+  }
+
+  /* Green boxes turn red when they hold a wrong number. When the answer shows a missed or
+     mistaken trade, empty green boxes turn red too, to show where the trade goes.
+     A plain fact slip leaves empty boxes alone (the trade may have been done in their head). */
+  var REGROUP_CODES=['smaller_from_larger','no_reduce','tens_value','ones_value'];
+  function markWorkBoxes(p, results, wc){
+    var c=sub2(p.a,p.b);
+    state.workBoxes.forEach(function(w){ w.classList.remove('wrong'); w.removeAttribute('aria-invalid'); });
+    var regroupErr=results.some(function(o){ return !o.ok && REGROUP_CODES.indexOf(o.code)>=0; });
+    for(var idx=0; idx<2; idx++){
+      var w=state.workBoxes[idx], pl=1-idx, v=w.value.trim();
+      var wrongVal = v!=='' && Number(v)!==c[pl].work;
+      if(wrongVal || (regroupErr && v==='')){ w.classList.add('wrong'); w.setAttribute('aria-invalid','true'); }
+    }
+  }
+
+  // What the child wrote in the green boxes, keyed by place value (0 ones, 1 tens).
+  function readWork(){
+    if(!state.p) return {};
+    return {top:{1:(state.workBoxes[0]||{}).value||'', 0:(state.workBoxes[1]||{}).value||''}};
+  }
+
+  // "Do it together": fill in the trade and the answer.
+  function fillTogether(wrong){
+    var c=sub2(state.p.a,state.p.b);
+    state.workBoxes[0].value=String(c[1].work); state.workBoxes[1].value=String(c[0].work);
+    state.workBoxes.forEach(function(w,idx){ w.classList.remove('wrong'); w.removeAttribute('aria-invalid'); w.dispatchEvent(new Event('input')); });
+    wrong.forEach(function(o){
+      var b=state.answerBoxes[o.i];
+      b.value=o.want; b.classList.remove('wrong'); b.classList.remove('focuscol'); b.classList.add('shown');
+    });
+  }
+
+  nextBtn.addEventListener('click', function(){
+    state.i++;
+    if(state.i>N-1) finish();
+    else render();
+  });
+
+  function finish(){
+    theme('sub');
+    card.hidden=true; doneCard.hidden=false;
+    var recs=state.session.problems;
+    var first=recs.filter(function(r){ return r.firstTry; }).length;
+    $('doneTitle').textContent = state.name ? 'All five done, '+state.name+'!' : 'All five done!';
+    $('donePip').innerHTML = mascot(160);
+    $('pipCheer').textContent = pipCheer(first);
+    var html='';
+    recs.forEach(function(r){
+      var cls = r.firstTry ? '' : (r.revealed ? 'together' : 'fixed');
+      var icon = r.firstTry ? '⭐' : (r.revealed ? '🤝' : '💪');
+      var lab = r.firstTry ? 'First try!' : (r.revealed ? 'Did it together' : 'Fixed it!');
+      html+='<div class="starchip '+cls+'"><span class="s">'+icon+'</span>'+esc(probText(r))+'<br><b>'+lab+'</b></div>';
+    });
+    $('doneStars').innerHTML=html;
+    dotsEl.innerHTML='';
+    for(var k=0;k<N;k++){ var d=el('div','dot done'); dotsEl.appendChild(d); }
+    countEl.textContent='Finished';
+    confetti();
+    try{ $('doneTitle').focus({preventScroll:true}); }catch(e){}
+  }
+  $('againBtn').addEventListener('click', startSession);
+
+  function pipCheer(first){
+    var hi = state.name ? pick(['Hoo-ray, '+state.name+'!', 'Way to go, '+state.name+'!', 'Hoot hoot, '+state.name+'!'])
+                        : pick(['Hoo-ray!', 'Way to go!', 'Hoot hoot!']);
+    if(first===N) return hi+' Every single one on the first try. You’re a trading superstar!';
+    if(first>=3)  return hi+' You got '+first+' on the first try and fixed the rest. I’m so proud of you!';
+    return hi+' You kept going on every problem, even the tricky ones. That’s how brains grow!';
+  }
+  if(!canSpeak) $('sayCheer').hidden=true;
+  $('sayCheer').addEventListener('click', function(){ speak($('pipCheer').textContent); });
+
+  /* ----- confetti ----- */
+  function confetti(){
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var box=$('confetti');
+    var colors=['#1F9D62','#2C6FD1','#7248B4','#4FC08D','#89B6F0'];
+    for(var i=0;i<70;i++){
+      var d=el('div','piece');
+      d.style.left=(Math.random()*100)+'%';
+      d.style.background=pick(colors);
+      d.style.animationDelay=(Math.random()*0.45)+'s';
+      d.style.animationDuration=(1.5+Math.random()*1.3)+'s';
+      d.style.width=(8+Math.random()*8)+'px';
+      box.appendChild(d);
+    }
+    setTimeout(function(){ box.innerHTML=''; }, 3400);
+  }
+
+  /* =========================================================
+     Parent report
+     ========================================================= */
+  function tallyErrors(sessions){
+    var t={};
+    sessions.forEach(function(s){ s.problems.forEach(function(r){
+      (r.errorCodes||[]).forEach(function(c){
+        if(!ERR[c]) return;                       // skip codes from older versions
+        if(!t[c]) t[c]={count:0, ex:null, alts:[]};
+        t[c].count++;
+        (r.firstErrors||[]).forEach(function(e){ if(e.code===c) (e.alts||[]).forEach(function(a){ if(ERR[a] && t[c].alts.indexOf(a)<0) t[c].alts.push(a); }); });
+        if(!t[c].ex){
+          var fe=(r.firstErrors||[]).filter(function(e){ return e.code===c; })[0];
+          t[c].ex={r:r, fe:fe};
+        }
+      });
+    }); });
+    return t;
+  }
+
+  function fmtDate(iso){ var d=new Date(iso); return d.toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric', year:'numeric'}); }
+
+  function reportData(){
+    var all=allSessions();
+    if(!all.length) return null;
+    var cur=all[all.length-1];
+    var recent=all.slice(-5);
+    var recs=cur.problems;
+    function count(f){ return recs.filter(f).length; }
+    var d={
+      all:all, cur:cur, recent:recent, recs:recs,
+      name:cur.name||'', who:cur.name||'Your child',
+      n:recs.length,
+      first:count(function(r){ return r.firstTry; }),
+      ansFirst:count(function(r){ return r.answerFirstTry; }),
+      fixed:count(function(r){ return !r.firstTry && !r.revealed; }),
+      shown:count(function(r){ return r.revealed; }),
+      mins:Math.max(1, Math.round(sum(recs,function(r){ return r.ms||0; })/60000)),
+      hinted:count(function(r){ return r.hintMax>0; }),
+      helpOpens:sum(recs,function(r){ return r.helpOpens||0; }),
+      workCorrect:count(function(r){ return r.workFirst==='correct'; }),
+      workPartial:count(function(r){ return r.workFirst==='partial'; }),
+      workNone:count(function(r){ return r.workFirst==='none'; }),
+      workWrong:count(function(r){ return r.workFirst==='wrong'; }),
+      stNow:skillStats([cur]), stRec:skillStats(recent),
+      errNow:tallyErrors([cur]), errRec:tallyErrors(recent)
+    };
+    var tried=SKILL_ORDER.filter(function(k){ return d.stRec[k].opp>0; });
+    d.strengths=tried.filter(function(k){ return statusOf(d.stRec[k])==='well'; });
+    d.early=tried.filter(function(k){ return statusOf(d.stRec[k])==='early'; });
+    d.promising=tried.filter(function(k){ return statusOf(d.stRec[k])==='developing' && d.stRec[k].m>=0.8; });
+    d.focus=tried.filter(function(k){ var t=statusOf(d.stRec[k]); return (t==='developing' && d.stRec[k].m<0.8) || t==='needs'; })
+                 .sort(function(a,b){ return d.stRec[a].m-d.stRec[b].m; });
+    d.errOrder=Object.keys(d.errNow).sort(function(a,b){ return d.errNow[b].count-d.errNow[a].count; });
+    return d;
+  }
+
+  function lower(k){ return SKILLS[k].label.charAt(0).toLowerCase()+SKILLS[k].label.slice(1); }
+
+  function summarySentence(d){
+    var s=d.who+' solved '+d.first+' of '+d.n+' problem'+(d.n===1?'':'s')+' on the first try';
+    var extra=[];
+    if(d.fixed) extra.push('fixed '+d.fixed+' after feedback');
+    if(d.shown) extra.push('worked through '+d.shown+' with full step-by-step support');
+    s += extra.length ? ', '+extra.join(', and ')+'.' : '.';
+    if(d.workWrong) s+=' '+d.workWrong+' had the right answer digits but a mistake in the written trade, so '+(d.workWrong===1?'it doesn’t':'they don’t')+' count as first-try correct.';
+    if(d.strengths.length) s+=' Going well across several sessions: '+d.strengths.map(lower).join('; ')+'.';
+    if(d.promising.length) s+=' Off to a good start (needs more practice to confirm): '+d.promising.map(lower).join('; ')+'.';
+    if(d.focus.length) s+=' Next focus: '+lower(d.focus[0])+(limitedEvidence(d.stRec[d.focus[0]])?' (based on limited practice so far)':'')+'.';
+    else if(!d.promising.length && (d.early.length || !d.strengths.length)) s+=' There isn’t enough practice yet to call any step going well or needing work. A few more sessions will make the picture clearer.';
+    else s+=' No weak spots showed up in recent practice.';
+    return s;
+  }
+
+  function nextSteps(d){
+    var out=[];
+    d.focus.slice(0,2).forEach(function(k){ out.push(SKILL_NEXT[k].weak); });
+    d.errOrder.slice(0,2).forEach(function(c){
+      if(out.indexOf(ERR[c].next)<0) out.push(ERR[c].next);
+    });
+    if(d.strengths.length) out.push('Celebrate what’s working: '+SKILL_NEXT[d.strengths[0]].strong);
+    if(d.workNone===d.n && d.n>0) out.push('All answers this session were worked out without writing the trade. That’s fine. Now and then, ask them to show the trade in the green boxes or say it out loud ("4 tens and 2 ones is the same as 3 tens and 12 ones"), so you can see the thinking behind the answers.');
+    if(SKILL_ORDER.every(function(k){ return statusOf(d.stRec[k])==='well'; }))
+      out.push('Ready for a stretch: three-digit regrouping practice uses the same trade one column over.');
+    if(!d.strengths.length && !d.focus.length) out.push('Keep practicing a few times a week. Step statuses firm up after about 6 problems across 2 or more sessions.');
+    out.push('Print the personalized practice sheet: 7 problems target the steps that need work and 3 are warm-ups.');
+    return out;
+  }
+
+  function workLabel(r){
+    if(r.workFirst==='correct') return 'Correct trade shown';
+    if(r.workFirst==='partial') return 'Part of the trade shown (correct)';
+    if(r.workFirst==='wrong') return r.workFinal==='none' ? 'Had a mistake, then cleared' : 'Had a mistake, then fixed';
+    return 'None (worked it out mentally)';
+  }
+
+  function exampleLine(e){
+    if(!e || !e.r) return '';
+    var r=e.r;
+    var s='Example: '+probText(r)+' — answered '+(r.firstAnswer||'(blank)')+', correct answer '+r.result+'.';
+    if(e.fe && e.fe.work) s+=' Over the '+PLACES[e.fe.place]+' they wrote '+e.fe.got+' (should be '+e.fe.want+').';
+    else if(e.fe && e.fe.got!=='') s+=' In the '+PLACES[e.fe.place]+' they wrote '+e.fe.got+' (should be '+(e.fe.want===''?'blank':e.fe.want)+').';
+    var w=r.firstWork && r.firstWork.top;
+    if(w && !(e.fe && e.fe.work)){
+      var shown=[];
+      if(w[1]) shown.push(w[1]+' over the tens');
+      if(w[0]) shown.push(w[0]+' over the ones');
+      s+= shown.length ? ' Trade written: '+shown.join(', ')+'.' : ' No trade was written.';
+    }
+    return s;
+  }
+
+  function renderReport(){
+    var box=$('reportBody');
+    var d=reportData();
+    if(!d){ var c0=Store.current(); box.innerHTML='<div class="rp-empty">No practice saved'+(c0?' for '+esc(displayName(c0)):'')+' yet. Finish at least one problem, and the report will appear here.</div>'; return; }
+    var h='';
+    h+='<h1>'+esc(d.name ? d.name+'’s' : 'Your Child’s')+' Two-Digit Subtraction Report</h1>';
+    h+='<p class="meta">Session: '+esc(fmtDate(d.cur.date))+' · '+d.all.length+' session'+(d.all.length===1?'':'s')+' saved for '+esc(displayName(Store.current()))+' on this device</p>';
+
+    h+='<div class="kpis">'+
+      '<div class="kpi"><b>'+d.first+' / '+d.n+'</b><span>right on the first try (answer and any written trade)</span></div>'+
+      '<div class="kpi"><b>'+d.hinted+'</b><span>problems needed a hint</span></div>'+
+      '<div class="kpi"><b>'+d.mins+' min</b><span>time practicing</span></div>'+
+      '<div class="kpi"><b>'+d.workCorrect+' / '+d.n+'</b><span>showed the full trade correctly</span></div>'+
+    '</div>';
+    h+='<p class="small">Written trade on the first try: '+d.workCorrect+' fully correct · '+d.workPartial+' partly shown (correct) · '+d.workNone+' none (worked out mentally) · '+d.workWrong+' with a mistake. Green boxes are optional. A right answer without written work is accepted, but it only shows the answer digits, not how the trade was done.</p>';
+    h+='<div class="summary">'+esc(summarySentence(d))+'</div>';
+
+    // steps
+    h+='<h2>Steps of the trade</h2><table><thead><tr><th>Step</th><th>This session</th><th>Last '+d.recent.length+' session'+(d.recent.length===1?'':'s')+'</th><th class="barcol" style="width:120px"><span class="sr-only">Progress bar</span></th><th>Status</th></tr></thead><tbody>';
+    SKILL_ORDER.forEach(function(k){
+      var n=d.stNow[k], r=d.stRec[k];
+      if(!r.opp) return;
+      var stt=statusOf(r);
+      h+='<tr><td>'+esc(SKILLS[k].label)+'</td><td>'+(n.opp? n.ok+' / '+n.opp : '—')+'</td><td>'+r.ok+' / '+r.opp+'</td>'+
+         '<td class="barcol"><div class="bar" aria-hidden="true"><i style="width:'+Math.round(r.m*100)+'%"></i></div></td>'+
+         '<td><span class="pillst '+stt+'">'+STATUS_LABEL[stt]+'</span><br><span class="evid'+(limitedEvidence(r)?' lim':'')+'">'+esc(evidenceText(r))+'</span></td></tr>';
+    });
+    h+='</tbody></table>';
+    h+='<p class="small">Each problem counts at most once for each step, and only when the first try shows something about that step. For example, if the ones weren’t traded, the ones subtraction isn’t judged. A written trade with a wrong number counts against that step even when the answer was right. A small fact slip (like 13 − 6 = 8) doesn’t count against the trading steps. <b>Going well</b> means 80% or more across at least 6 problems in 2 or more sessions. <b>Developing</b> is 50–79%, or 80%+ without that much evidence yet. <b>Too early to tell</b> means fewer than 3 problems. Statuses describe recent accuracy, not confirmed understanding.</p>';
+
+    // possible patterns
+    h+='<h2>Possible patterns we noticed</h2>';
+    h+='<p class="small">These come from the digits and the trade your child entered. The same wrong answer can come from more than one mistake, so treat these as things to watch rather than a diagnosis.</p>';
+    if(!d.errOrder.length){
+      h+='<p>No mistakes this session. Every problem was right on the first try.</p>';
+    }else{
+      d.errOrder.forEach(function(c){
+        var e=ERR[c], t=d.errNow[c];
+        h+='<div class="notice"><b>'+esc(e.title)+' ('+t.count+' problem'+(t.count===1?'':'s')+')</b>'+
+           esc(e.what)+' '+esc(e.why)+
+           (t.alts.length ? '<div class="ex"><b style="display:inline">Could also be:</b> '+esc(t.alts.map(function(a){ return ERR[a].title.replace(/^Possibl[ey] /,'').replace(/^./,function(ch){return ch.toLowerCase();}); }).join('; '))+'.</div>' : '')+
+           '<div class="ex">'+esc(exampleLine(t.ex))+'</div></div>';
+      });
+    }
+    if(d.helpOpens) h+='<p class="small">They opened the "?" break-it-apart helper '+d.helpOpens+' time'+(d.helpOpens===1?'':'s')+' on their own, which is a good sign of self-help.</p>';
+
+    // next steps
+    h+='<h2>Next steps at home</h2><ol class="nextlist">';
+    nextSteps(d).forEach(function(s){ h+='<li>'+esc(s)+'</li>'; });
+    h+='</ol>';
+
+    // problem log
+    h+='<h2>Problem by problem</h2><table><thead><tr><th>#</th><th>Problem</th><th>First answer</th><th>Written trade</th><th class="narrowhide">Tries</th><th>Support used</th><th>Result</th></tr></thead><tbody>';
+    d.recs.forEach(function(r,i){
+      var sup=[];
+      if(r.hintMax) sup.push(['','clue','step-by-step','walk-through'][r.hintMax]);
+      if(r.workPrompt) sup.push('trade check');
+      if(r.helpOpens) sup.push('? helper');
+      if(r.revealed) sup.push('digits shown');
+      var res = r.firstTry ? '✔ First try' : (r.revealed ? 'Solved with full support' : (r.answerFirstTry ? 'Answer right; trade fixed' : 'Fixed after hint'));
+      h+='<tr><td>'+(i+1)+'</td><td>'+esc(probText(r))+' = '+r.result+'</td><td>'+esc(r.firstAnswer||'')+'</td><td>'+esc(workLabel(r))+'</td><td class="narrowhide">'+r.tries+'</td><td>'+esc(sup.join(', ')||'none')+'</td><td>'+res+'</td></tr>';
+    });
+    h+='</tbody></table>';
+
+    // progress
+    var hist=d.all.slice(-8);
+    if(hist.length>1){
+      h+='<h2>Progress over time</h2><table><thead><tr><th>Date</th><th>First-try correct</th><th class="barcol" style="width:180px"><span class="sr-only">Progress bar</span></th></tr></thead><tbody>';
+      hist.forEach(function(s){
+        var f=s.problems.filter(function(r){ return r.firstTry; }).length, n=s.problems.length;
+        h+='<tr><td>'+esc(fmtDate(s.date))+'</td><td>'+f+' / '+n+'</td><td class="barcol"><div class="bar" aria-hidden="true"><i style="width:'+Math.round(f/n*100)+'%"></i></div></td></tr>';
+      });
+      h+='</tbody></table>';
+    }
+    h+='<p class="small" style="margin-top:18px">Generated by Two-Digit Subtraction With Regrouping. Results are stored only in this browser.</p>';
+    box.innerHTML=h;
+  }
+
+  function reportText(){
+    var d=reportData(); if(!d) return 'No practice saved yet.';
+    var L=[];
+    L.push((d.name? d.name+'’s ':'')+'Two-Digit Subtraction Report — '+fmtDate(d.cur.date));
+    L.push('');
+    L.push(summarySentence(d));
+    L.push('Written trade (first try): '+d.workCorrect+' correct, '+d.workPartial+' partly shown, '+d.workNone+' none, '+d.workWrong+' with a mistake.');
+    L.push('');
+    L.push('STEPS (last '+d.recent.length+' sessions)');
+    SKILL_ORDER.forEach(function(k){ var r=d.stRec[k]; if(r.opp) L.push('- '+SKILLS[k].label+': '+r.ok+'/'+r.opp+' ('+STATUS_LABEL[statusOf(r)]+'; '+evidenceText(r)+')'); });
+    if(d.errOrder.length){
+      L.push(''); L.push('POSSIBLE PATTERNS (from the digits and work entered; not a diagnosis)');
+      d.errOrder.forEach(function(c){ L.push('- '+ERR[c].title+' ('+d.errNow[c].count+'). '+exampleLine(d.errNow[c].ex)); });
+    }
+    L.push(''); L.push('NEXT STEPS');
+    nextSteps(d).forEach(function(s,i){ L.push((i+1)+'. '+s); });
+    return L.join('\n');
+  }
+
+  function openReport(from){
+    state.returnTo=from; renderReport(); resetClear(); show('reportView');
+  }
+  $('printReport').addEventListener('click', function(){ window.print(); });
+  $('copyReport').addEventListener('click', function(){
+    var btn=this, txt=reportText();
+    function done(){ btn.textContent='Copied!'; setTimeout(function(){ btn.textContent='Copy as text'; },1800); }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback);
+      else fallback();
+    }catch(e){ fallback(); }
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); done(); }catch(e){} document.body.removeChild(ta);
+    }
+  });
+  var clearArmed=false;
+  function resetClear(){ clearArmed=false; var b=$('clearHist'), cur=Store.current(); b.textContent='Clear '+(cur?displayName(cur)+'’s':'saved')+' history'; b.classList.remove('danger'); }
+  $('clearHist').addEventListener('click', function(){
+    var cur=Store.current(); if(!cur) return;
+    if(!clearArmed){ clearArmed=true; this.textContent='Tap again to erase '+displayName(cur)+'’s saved sessions'; this.classList.add('danger'); return; }
+    Store.clearSessions(cur.id); resetClear(); renderReport(); refreshHistNote();
+  });
+
+  /* =========================================================
+     Personalized practice sheet
+     ========================================================= */
+  function genLabel(k){ return SKILLS[k] ? SKILLS[k].label : (KIND_LABEL[k] || 'Warm-up'); }
+
+  function sheetPlan(){
+    var all=allSessions();
+    if(!all.length) return null;
+    var recent=all.slice(-3), st=skillStats(recent);
+    var tried=SKILL_ORDER.filter(function(k){ return st[k].opp>0; });
+    var weak=tried.filter(function(k){ return statusOf(st[k])!=='well'; }).sort(function(a,b){ return st[a].m-st[b].m; }).slice(0,3);
+    var stretch=false;
+    if(!weak.length){ stretch=true; weak=['zero_ones','one_digit','ones_hard']; }
+    // 7 focus problems, split by weakness (at least 1 each)
+    var w=weak.map(function(k){ return (st[k] && st[k].m!=null ? 1-st[k].m : 0.5)+0.15; });
+    var counts=weak.map(function(){ return 1; }), left=7-weak.length;
+    while(left>0){
+      var tot=w.reduce(function(a,b){return a+b;},0), r=Math.random()*tot, j=0;
+      for(;j<w.length;j++){ r-=w[j]; if(r<=0) break; }
+      counts[Math.min(j,w.length-1)]++; left--;
+    }
+    var seen={};
+    function gen(key, n){
+      var kinds = KINDS_FOR_SKILL[key] || [key];
+      var kind = kinds[(n||0)%kinds.length];
+      for(var t=0;t<40;t++){ var p=makeProb(kind); if(!seen[p.a+'-'+p.b]){ seen[p.a+'-'+p.b]=1; return p; } }
+      return makeProb(kind);
+    }
+    var warm=[0,1,2].map(function(){ return {p:gen('standard'), key:'standard', tag:'warm'}; });
+    var focus=[];
+    weak.forEach(function(k,i){ for(var c=0;c<counts[i];c++) focus.push({p:gen(k,c), key:k, tag:'focus'}); });
+    var probs=[warm[0], warm[1]].concat(focus, [warm[2]]);
+    var tally=tallyErrors(recent);
+    var codes=Object.keys(tally).sort(function(a,b){ return tally[b].count - tally[a].count; });
+    return {name:all[all.length-1].name||'', weak:weak, counts:counts, stretch:stretch, problems:probs, codes:codes, example:gen(weak[0])};
+  }
+
+  // grid columns: 1 = minus sign, 2 = tens, 3 = ones
+  function colOf(place){ return 3-place; }
+
+  function sheetProblemHTML(p, opt){
+    opt=opt||{};
+    var A=D(p.a), B=D(p.b), h='';
+    var sc=sub2(p.a,p.b);
+    // row 1: space for the trade (or the trade itself on worked examples)
+    if(opt.example){
+      for(var k=0;k<2;k++){
+        var inner = sc[k].chain.length ? '<span class="new">'+sc[k].work+'</span>' : '';
+        h+='<div class="ann" style="grid-column:'+colOf(k)+';grid-row:1">'+inner+'</div>';
+      }
+    }else{
+      h+='<div class="sp" style="grid-column:1/-1;grid-row:1"></div>';
+    }
+    for(var k3=0;k3<2;k3++){
+      var x = opt.example && sc[k3].chain.length ? ' x' : '';
+      h+='<div class="d'+x+'" style="grid-column:'+colOf(k3)+';grid-row:2">'+A[k3]+'</div>';
+      h+='<div class="d" style="grid-column:'+colOf(k3)+';grid-row:3">'+B[k3]+'</div>';
+    }
+    h+='<div class="o" style="grid-column:1;grid-row:3">−</div>';
+    h+='<div class="ln" style="grid-row:4"></div>';
+    var res=String(p.result);
+    [1,0].forEach(function(pl){
+      var show = (opt.example||opt.key) && pl<res.length;            // no leading zero for one-digit answers
+      var dig = show ? res.charAt(res.length-1-pl) : '';
+      h+='<div class="ab'+(show?' key':'')+'" style="grid-column:'+colOf(pl)+';grid-row:5">'+dig+'</div>';
+    });
+    return '<div class="wpg">'+h+'</div>';
+  }
+
+  function exampleSteps(p){
+    var c=sub2(p.a,p.b), o=c[0], t=c[1], s=[];
+    s.push('Ones: '+o.orig+' − '+o.bot+'? '+o.orig+' is less than '+o.bot+', so trade 1 ten for 10 ones.');
+    s.push(p.a+' = '+t.orig+' tens and '+o.orig+' ones = '+t.work+' tens and '+o.work+' ones. Cross out '+t.orig+', write '+t.work+'. Cross out '+o.orig+', write '+o.work+'.');
+    if(o.work>10){
+      var r=o.work-10;
+      s.push('Ones: '+o.work+' − '+o.bot+'. '+o.work+' = 10 + '+r+'; 10 − '+o.bot+' = '+(10-o.bot)+'; '+(10-o.bot)+' + '+r+' = '+o.digit+'.');
+    }else{
+      s.push('Ones: 10 − '+o.bot+' = '+o.digit+'.');
+    }
+    s.push(t.digit===0 ? 'Tens: '+t.work+' − '+t.bot+' = 0. No tens are left, so the answer is just '+o.digit+'.'
+                       : 'Tens: '+t.work+' − '+t.bot+' = '+t.digit+'.');
+    return s;
+  }
+
+  function keyNote(p){
+    var c=sub2(p.a,p.b);
+    return 'trade: tens '+c[1].orig+' → '+c[1].work+', ones '+c[0].orig+' → '+c[0].work;
+  }
+
+  var currentSheet=null;
+  function renderSheet(regen){
+    var box=$('sheetBody');
+    if(regen || !currentSheet) currentSheet=sheetPlan();
+    var S=currentSheet;
+    if(!S){ var c1=Store.current(); box.innerHTML='<div class="rp-empty">Finish a practice set first'+(c1?' as '+esc(displayName(c1)):'')+'. The sheet is built from how your child did.</div>'; $('newSheet').hidden=true; return; }
+    $('newSheet').hidden=false;
+    var h='';
+    h+='<div class="sh-head"><div><h1>Two-Digit Subtraction Practice Sheet</h1>'+
+       '<p class="focusline"><b>Focus:</b> '+esc(S.weak.map(genLabel).join(' · '))+(S.stretch?' (stretch: every step is going well!)':'')+
+       '<br><b>Warm-ups:</b> problems 1, 2 and 10</p></div>'+
+       '<div class="nm">Name: <span>'+esc(S.name||'')+'</span><br>Date: <span></span></div></div>';
+
+    var tips=S.codes.slice(0,3).map(function(c){ return ERR[c].kid; });
+    if(!tips.length) tips.push(ERR.smaller_from_larger.kid);
+    tips.unshift('Start with the ones.');
+    h+='<div class="remember"><b>Remember:</b> '+esc(uniq(tips).join('  •  '))+'</div>';
+
+    var ex=S.example;
+    h+='<div class="example ex"><div>'+sheetProblemHTML(ex,{example:true})+'</div><div><p class="exlabel">Worked example: '+esc(genLabel(S.weak[0]))+'</p><ol>';
+    exampleSteps(ex).forEach(function(s){ h+='<li>'+esc(s)+'</li>'; });
+    h+='<li>Answer: <b>'+ex.result+'</b></li></ol></div></div>';
+
+    function card(it,i){
+      var tag = it.tag==='warm' ? (i===S.problems.length-1?'finish strong':'warm-up') : 'focus';
+      return '<div class="wp"><div class="wph"><b>'+(i+1)+'</b><span class="tag '+(it.tag==='warm'?'warm':'focus')+'">'+tag+'</span></div>'+sheetProblemHTML(it.p)+'</div>';
+    }
+    h+='<div class="wgrid">';
+    S.problems.slice(0,6).forEach(function(it,i){ h+=card(it,i); });
+    h+='</div>';
+
+    // page 2: the rest of the problems
+    h+='<div class="pagebreak"><div class="contd"><h2>Keep going!</h2><div class="nm">Name: <span>'+esc(S.name||'')+'</span></div></div>';
+    h+='<div class="wgrid">';
+    S.problems.slice(6).forEach(function(it,k){ h+=card(it,k+6); });
+    h+='</div>';
+    h+='<p class="small" style="margin-top:12px">The space above each problem is for crossing out and writing the new tens and ones. If nothing is left in the tens, leave that box empty.</p></div>';
+
+    // answer key: every problem fully worked
+    var mix=S.weak.map(function(k,i){ return S.counts[i]+' on '+genLabel(k).charAt(0).toLowerCase()+genLabel(k).slice(1); }).join(', ');
+    h+='<div class="pagebreak"><h2 style="margin-top:0">Answer key with worked solutions (for grown-ups)</h2>';
+    h+='<p class="small">Problems 1, 2 and 10 are warm-ups. Problems 3–9 target '+(S.stretch?'stretch problems':'the steps that need work')+': '+esc(mix)+'. Red cross-outs show the trade: the tens go down by 1 and the ones go up by 10. If your child gets stuck, ask "Is the top big enough? Where can we get more ones?" before showing a solution.</p>';
+    h+='<div class="kgrid">';
+    S.problems.forEach(function(it,i){
+      h+='<div class="kcard"><div class="ex kx">'+sheetProblemHTML(it.p,{example:true})+'</div><div>'+
+         '<h3>'+(i+1)+'. '+esc(probText(it.p))+' = '+it.p.result+'</h3><ol>';
+      exampleSteps(it.p).forEach(function(st){ h+='<li>'+esc(st)+'</li>'; });
+      h+='</ol><p class="sk">'+esc(genLabel(it.key))+' · '+esc(keyNote(it.p))+'</p></div></div>';
+    });
+    h+='</div>';
+    if(S.codes.length){
+      h+='<h2>What to watch for</h2><ul>';
+      S.codes.slice(0,3).forEach(function(c){ h+='<li><b>'+esc(ERR[c].title)+'.</b> '+esc(ERR[c].next)+'</li>'; });
+      h+='</ul>';
+    }
+    h+='</div>';
+    box.innerHTML=h;
+  }
+
+  function openSheet(from){ state.returnTo=from; renderSheet(true); show('sheetView'); }
+  $('printSheet').addEventListener('click', function(){ window.print(); });
+  $('newSheet').addEventListener('click', function(){ renderSheet(true); });
+
+  /* ----- nav wiring ----- */
+  $('lpReport').addEventListener('click', function(){ openReport('landing'); });
+  $('lpSheet').addEventListener('click', function(){ openSheet('landing'); });
+  $('dReport').addEventListener('click', function(){ openReport('practice'); });
+  $('dSheet').addEventListener('click', function(){ openSheet('practice'); });
+  $('rpToSheet').addEventListener('click', function(){ openSheet(state.returnTo); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-back]'), function(b){
+    b.addEventListener('click', function(){
+      refreshHistNote(); renderWho(); greet();
+      show(state.returnTo==='practice' ? 'practice' : 'landing');
+      if(state.returnTo==='practice') theme('sub');
+    });
+  });
+
+  /* =========================================================
+     How-it-works demo (landing page). A non-interactive copy of the
+     real problem screen, stepped through with a pointing finger.
+     ========================================================= */
+  (function(){
+    function bondSVG(v,r){
+      var f=' font-family="Andika,Verdana,sans-serif" font-weight="700" text-anchor="middle"';
+      return '<svg width="118" height="80" viewBox="0 0 118 80" role="img" aria-label="'+v+' splits into 10 and '+r+'">'+
+        '<line x1="59" y1="30" x2="28" y2="54" stroke="#9C86C9" stroke-width="3"/><line x1="59" y1="30" x2="90" y2="54" stroke="#9C86C9" stroke-width="3"/>'+
+        '<circle cx="59" cy="18" r="16" fill="#fff" stroke="#7248B4" stroke-width="3"/><text x="59" y="25" font-size="19" fill="#1E2430"'+f+'>'+v+'</text>'+
+        '<circle cx="28" cy="60" r="16" fill="#2C6FD1"/><text x="28" y="67" font-size="17" fill="#fff"'+f+'>10</text>'+
+        '<circle cx="90" cy="60" r="16" fill="#1F9D62"/><text x="90" y="67" font-size="18" fill="#fff"'+f+'>'+r+'</text>'+
+        '</svg>';
+    }
+    // Three-step make-a-ten picture. Colors track each number: 10 = blue, leftover ones = green, middle answer = purple.
+    function breakApart(v, take, opt){
+      opt=opt||{};
+      var r=v-10, mid=10-take, ans=mid+r, hide=!!opt.hide;
+      function nc(cls,t){ return '<span class="nc '+cls+'">'+t+'</span>'; }
+      var midChip = hide ? nc('q','?') : nc('mid',mid);
+      var ansChip = hide ? nc('q','?') : nc('ans',ans);
+      return '<div class="bp'+(opt.hint?' hint':'')+'">'+
+        '<div class="bph"><span class="bpq">'+(opt.icon||'?')+'</span>'+opt.title+'</div>'+
+        '<div class="bps">'+
+          '<div class="bstep s1"><div class="bhead"><span class="bnum">1</span>Split '+v+'</div><div class="beq">'+bondSVG(v,r)+'</div></div>'+
+          '<div class="barrow a1">→</div>'+
+          '<div class="bstep s2"><div class="bhead"><span class="bnum">2</span>Take '+take+' from 10</div><div class="beq">'+nc('ten','10')+'− '+take+' = '+midChip+'</div></div>'+
+          '<div class="barrow a2">→</div>'+
+          '<div class="bstep s3"><div class="bhead"><span class="bnum">3</span>Add the '+r+' back</div><div class="beq">'+midChip+'+ '+nc('rest',r)+' = '+ansChip+'</div></div>'+
+        '</div></div>';
+    }
+
+    /* Base-ten blocks picture: tens rods and ones cubes.
+       opt.traded = draw one rod as a dashed outline (it was traded) and 10 purple "new" ones.
+       opt.takeOnes / opt.takeTens = how many to show as taken away (faded). */
+    function blocks(tens, ones, opt){
+      opt=opt||{};
+      var h='<div class="bp blk"><div class="bph"><span class="bpq">&#9638;</span>'+(opt.title||'Base-ten blocks')+'</div><div class="blkrow">';
+      h+='<div class="blkcol"><div class="rods">';
+      var takeT=opt.takeTens||0;
+      for(var i=0;i<tens;i++) h+='<span class="rod'+(i>=tens-takeT?' out':'')+'"></span>';
+      if(opt.traded) h+='<span class="rod gone"></span>';
+      h+='</div><div class="blab"><b>'+(tens-takeT)+'</b> ten'+(tens-takeT===1?'':'s')+'</div></div>';
+      var newOnes = opt.traded ? 10 : 0, total=ones+newOnes, takeO=opt.takeOnes||0;
+      h+='<div class="blkcol"><div class="cubes">';
+      for(var j=0;j<total;j++){
+        var isNew = j>=ones;
+        var out = j>=total-takeO;
+        h+='<span class="cube'+(isNew?' new':'')+(out?' out':'')+'"></span>';
+      }
+      h+='</div><div class="blab"><b>'+(total-takeO)+'</b> one'+(total-takeO===1?'':'s')+'</div></div>';
+      h+='</div>';
+      if(opt.note) h+='<div class="bnote">'+opt.note+'</div>';
+      return h+'</div>';
+    }
+
+    var DEMOS = {
+      trade:{a:42, b:17, steps:[
+        {say:'We need <b>42 − 17</b>. 42 is 4 tens and 2 ones. Start with the <b>ones</b>: 2 take away 7.', hl:[0], pt:'top-0',
+          coach:blocks(4,2,{note:'42 = 4 tens and 2 ones'})},
+        {say:'Can we take 7 ones from 2 ones? <b>No!</b> There are only 2. We need more ones.', hl:[0], pt:'bot-0',
+          coach:blocks(4,2,{note:'Only 2 ones. Not enough to take away 7!'})},
+        {say:'So <b>trade 1 ten for 10 ones</b>. It’s still 42: now it’s <b>3 tens and 12 ones</b>.', pt:'top-1',
+          coach:blocks(3,2,{traded:true, note:'1 ten → 10 ones. Still 42: 3 tens and 12 ones.'})},
+        {say:'Show the trade. Cross out the 4 and type <b>3</b> in the green box over the tens.', work:{1:'3'}, struck:[1], pt:'work-1',
+          coach:blocks(3,2,{traded:true, note:'4 tens → 3 tens'})},
+        {say:'The ones got 10 more: 2 becomes <b>12</b>. Type 12 in the green box over the ones.', work:{0:'12'}, struck:[0], help:[0], pt:'work-0',
+          coach:blocks(3,2,{traded:true, note:'2 ones → 12 ones'})},
+        {say:'Now <b>12 − 7</b>. Tricky? Tap the purple <b>?</b> It breaks it into <b>3 easy steps</b>.', pt:'help-0',
+          coach:breakApart(12,7,{title:'Break it apart'})},
+        {say:'12 − 7 = 5. Type <b>5</b> in the ones box.', ans:{0:'5'}, hl:[0], pt:'ans-0',
+          coach:blocks(3,2,{traded:true, takeOnes:7, note:'12 ones take away 7 = 5 ones'})},
+        {say:'Tens: we have <b>3 tens</b> now. 3 − 1 = 2. Type <b>2</b>.', ans:{1:'2'}, hl:[1], pt:'ans-1',
+          coach:blocks(3,5,{takeTens:1, note:'3 tens take away 1 ten = 2 tens'})},
+        {say:'2 tens and 5 ones: <b>25</b>. Press <b>Check my work</b>. Great trading!', good:true, fb:'Beautiful trading!', pt:'check',
+          coach:blocks(2,5,{note:'42 − 17 = 25'})}
+      ]},
+      help:{a:63, b:27, steps:[
+        {say:'Oops happens! Say you typed <b>44</b> and pressed Check.', ans:{0:'4',1:'4'}, pt:'check'},
+        {say:'<b>Red boxes</b> show where to look, and the green boxes turn red to show where the trade goes. Pip gives you a <b>clue</b>. Tap 🔊 to hear it.', wrong:[0,1], wrongWork:[0,1], pt:'ans-0',
+          coach:'<div class="bp hint"><div class="bph"><span class="bpq">1</span>Clue</div><div style="font-size:18px;text-align:center">Look at the ones: <b>3 take away 7</b>.<br>Is 3 big enough? If not, trade 1 ten for 10 ones.</div></div>'},
+        {say:'Still stuck? Press Check again for <b>step-by-step</b> help. One more time and Pip does it <b>with you</b>.', wrong:[0,1], wrongWork:[0,1], pt:'check',
+          coach:breakApart(13,7,{title:'Step by step: after trading, the ones are 13', hint:true, icon:'2', hide:true})},
+        {say:'Fix it! Trade a ten: 6 → 5 and 3 → 13. Then 13 − 7 = <b>6</b> and 5 − 2 = <b>3</b>.', work:{1:'5',0:'13'}, struck:[0,1], help:[0], ans:{0:'6',1:'3'}, pt:'ans-1'},
+        {say:'Press Check again. <b>You fixed it!</b> Fixing mistakes is how brains grow.', good:true, fb:'You fixed it!', pt:'check'},
+        {say:'Need a break? The <b>🏠 Home</b> button at the top always brings you back here.', pt:'none'}
+      ]}
+    };
+
+    var cur='trade', idx=0, timer=null;
+    var stage=$('dStage'), cap=$('dCap'), num=$('dNum'), prog=$('dProg');
+    var finger=null;
+
+    function stateAt(d,i){
+      var st={ans:{},work:{},struck:{},help:{}};
+      for(var k=0;k<=i;k++){
+        var s=d.steps[k];
+        ['ans','work'].forEach(function(f){ if(s[f]) Object.keys(s[f]).forEach(function(x){ st[f][x]=s[f][x]; }); });
+        (s.struck||[]).forEach(function(x){ st.struck[x]=1; });
+        (s.help||[]).forEach(function(x){ st.help[x]=1; });
+      }
+      var last=d.steps[i];
+      st.hl=last.hl||[]; st.wrong=last.wrong||[]; st.wrongWork=last.wrongWork||[]; st.good=!!last.good;
+      st.coach=last.coach||''; st.fb=last.fb||''; st.pt=last.pt; st.say=last.say;
+      return st;
+    }
+
+    function cell(cls, col, row, text, key){
+      return '<div class="'+cls+'" style="grid-column:'+col+';grid-row:'+row+'"'+(key?' data-k="'+key+'"':'')+'>'+(text==null?'':text)+'</div>';
+    }
+
+    function draw(){
+      var d=DEMOS[cur], st=stateAt(d,idx);
+      var A=D(d.a), B=D(d.b), h='';
+      function colOf(k){ return 3-k; }                       // 1 = minus sign, 2 = tens, 3 = ones
+      var R = {help:1, work:2, top:3, bot:4, rule:5, ans:6};
+      [1,0].forEach(function(k){
+        if(st.help[k]) h+=cell('dhelp', colOf(k), R.help, '?', 'help-'+k);
+        var v=st.work[k]||''; h+=cell('dwork'+(v?' filled':'')+(st.wrongWork.indexOf(k)>=0?' wrong':''), colOf(k), R.work, v, 'work-'+k);
+      });
+      for(var k=0;k<2;k++){
+        var hl = st.hl.indexOf(k)>=0 ? ' hl' : '';
+        h+=cell('dd'+hl+(st.struck[k]?' struck':''), colOf(k), R.top, A[k], 'top-'+k);
+        h+=cell('dd'+hl, colOf(k), R.bot, B[k], 'bot-'+k);
+      }
+      h+=cell('dop', 1, R.bot, '−');
+      h+='<div class="drule" style="grid-row:'+R.rule+'"></div>';
+      [1,0].forEach(function(k){
+        var v=st.ans[k]||'', c='dbox';
+        if(v) c+=' filled';
+        if(st.hl.indexOf(k)>=0) c+=' hl';
+        if(st.wrong.indexOf(k)>=0) c+=' wrong';
+        if(st.good && v) c+=' good';
+        h+=cell(c, colOf(k), R.ans, v, 'ans-'+k);
+      });
+      var html='<div class="sleft"><div class="dgrid sub">'+h+'</div>';
+      html+='<div class="dcheck" data-k="check" style="background:var(--purple)">Check my work</div>';
+      html+='<div class="dfb">'+(st.fb||'')+'</div>';
+      html+='</div>';
+      var hasCoach=d.steps.some(function(x){ return !!x.coach; });
+      if(hasCoach) html+='<div class="sright">'+(st.coach ? '<div class="dcoach'+(st.coach.indexOf('class="bp')>=0?' plain':'')+'">'+st.coach+'</div>' : '')+'</div>';
+      var oldPos = finger ? {l:finger.style.left, t:finger.style.top} : null;
+      stage.innerHTML=html+'<div class="finger" aria-hidden="true">👆</div>';
+      finger=stage.querySelector('.finger');
+      if(oldPos){ finger.style.left=oldPos.l; finger.style.top=oldPos.t; }
+
+      cap.innerHTML=st.say; num.textContent=idx+1;
+      var p='';
+      for(var i=0;i<d.steps.length;i++) p+='<i'+(i===idx?' class="on"':'')+'></i>';
+      prog.innerHTML=p;
+      $('dBack').disabled = idx===0;
+      $('dNext').innerHTML = idx===d.steps.length-1 ? 'Again ↺' : 'Next ▶';
+
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ pointAt(st.pt); }); });
+    }
+
+    function pointAt(key){
+      var t = key && key!=='none' ? stage.querySelector('[data-k="'+key+'"]') : null;
+      if(!t){ finger.style.opacity='0'; return; }
+      var sr=stage.getBoundingClientRect(), r=t.getBoundingClientRect();
+      finger.style.opacity='1';
+      finger.style.left=(r.left-sr.left + r.width/2 - 6)+'px';
+      finger.style.top=(r.top-sr.top + r.height*0.78)+'px';
+      finger.classList.remove('tap'); void finger.offsetWidth; finger.classList.add('tap');
+    }
+
+    function go(i){ var n=DEMOS[cur].steps.length; idx=(i+n)%n; draw(); }
+    function stop(){ if(timer){ clearInterval(timer); timer=null; } $('dPlay').innerHTML='▶ Play all'; }
+
+    $('dNext').addEventListener('click', function(){ stop(); go(idx+1); });
+    $('dBack').addEventListener('click', function(){ stop(); if(idx>0) go(idx-1); });
+    $('dSay').addEventListener('click', function(){ speak(cap.textContent); });
+    if(!canSpeak) $('dSay').hidden=true;
+    $('dSay').setAttribute('aria-label','Read this step to me');
+    $('dPlay').addEventListener('click', function(){
+      if(timer){ stop(); return; }
+      if(idx===DEMOS[cur].steps.length-1) go(0);
+      this.innerHTML='⏸ Pause';
+      timer=setInterval(function(){
+        if(idx>=DEMOS[cur].steps.length-1){ stop(); return; }
+        go(idx+1);
+      }, 3600);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.demotab'), function(b){
+      b.addEventListener('click', function(){
+        stop();
+        Array.prototype.forEach.call(document.querySelectorAll('.demotab'), function(x){ x.classList.toggle('on', x===b); x.setAttribute('aria-pressed', x===b?'true':'false'); });
+        cur=b.getAttribute('data-d'); idx=0; finger=null; draw();
+      });
+    });
+    // On resize only move the finger; redrawing would restart the step animations.
+    var lastPt=null, rsz=null;
+    window.addEventListener('resize', function(){
+      clearTimeout(rsz);
+      rsz=setTimeout(function(){ if(!$('landing').hidden && finger) pointAt(DEMOS[cur].steps[idx].pt); }, 150);
+    });
+
+    window.Demo={ refresh:function(){ stop(); draw(); } };
+    draw();
+  })();
+
+  if(location.hash==='#selftest') window.__TD={analyze:analyze, sub2:sub2, workCheck:workCheck, skillOkFrom:skillOkFrom,
+    makeProb:makeProb, validTwoDigit:validTwoDigit, planSet:planSet, sheetPlan:sheetPlan, exampleSteps:exampleSteps,
+    Store:Store, statusOf:statusOf, skillStats:skillStats, state:state,
+    load:function(a,b){ state.problems[state.i]={type:'sub',a:a,b:b,result:a-b,kind:'test'}; render(); }};
+  show('landing');
+})();
+</script>
+</body>
+</html>

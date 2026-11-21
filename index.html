@@ -69,6 +69,15 @@ body.on-landing .dots, body.on-landing .count, body.on-landing .home{display:non
 body.on-paper .dots, body.on-paper .count{display:none;}
 /* the start page has its own big title, so the bar would only repeat it */
 body.on-landing .topbar{display:none;}
+/* pathway band: Learn (blue) -> Practice (purple) -> Apply */
+.ce-band{background:linear-gradient(90deg,#6A3FB0,var(--purple));color:#fff;border-top:4px solid #A98BE0;}
+.ce-inner{padding:12px 24px 13px;}
+.ce-eyebrow{margin:0;display:flex;align-items:center;gap:10px;font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.9);}
+.ce-pill{background:#F4C24F;color:#5A3A00;border-radius:999px;padding:1px 10px;font-size:12px;letter-spacing:.1em;}
+.ce-title{margin:2px 0 0;font-family:'Fredoka',sans-serif;font-size:27px;font-weight:600;line-height:1.2;color:#fff;}
+@media (max-width:560px){ .ce-inner{padding:10px 14px 11px;} .ce-title{font-size:21px;} .ce-eyebrow{font-size:11.5px;} .ce-pill{font-size:11px;} }
+/* the band carries the title, so the bar only needs Home, the dots and the count */
+.topbar .brand{display:none;}
 
 /* ---------- card ---------- */
 #practice{max-width:760px;margin:0 auto;padding:26px 16px 70px;}
@@ -569,6 +578,13 @@ h1.big .subt{display:block;font-size:.62em;color:var(--muted);}
 </style>
 </head>
 <body class="on-landing">
+
+<div class="ce-band noprint">
+  <div class="ce-inner">
+    <p class="ce-eyebrow"><span>Curiosity Engine</span><span class="ce-pill">Practice</span></p>
+    <p class="ce-title">Two-Digit Subtraction with Regrouping</p>
+  </div>
+</div>
 
 <header class="topbar noprint">
   <div class="brandwrap">
